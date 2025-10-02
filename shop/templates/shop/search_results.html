@@ -1,0 +1,298 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quick-Kart - Search Results</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{% static 'css/search.css' %}">
+</head>
+<body>
+
+
+
+{% if messages %}
+  <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    {% for message in messages %}
+      <div class="toast align-items-center border-0 mb-2
+        {% if message.tags == 'error' %} bg-danger text-white
+        {% elif message.tags == 'success' %} bg-success text-white
+        {% elif message.tags == 'warning' %} bg-warning text-dark
+        {% else %} bg-info text-white {% endif %}"
+        role="alert" aria-live="assertive" aria-atomic="true">
+
+        <div class="d-flex">
+          <div class="toast-body">
+            {% if message.tags == 'success' %} <i class="bi bi-check-circle-fill me-2"></i>
+            {% elif message.tags == 'error' %} <i class="bi bi-x-circle-fill me-2"></i>
+            {% elif message.tags == 'warning' %} <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% else %} <i class="bi bi-info-circle-fill me-2"></i> {% endif %}
+            {{ message }}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                  data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ====== DESKTOP NAVBAR ====== -->
+<nav class="navbar navbar-expand-lg navbar-dark custom-navbar d-none d-lg-flex fixed-top">
+  <div class="container-fluid align-items-center">
+    <!-- Left -->
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">🛍️ Quick-Kart</a>
+
+    <!-- Center Search -->
+    <form class="d-flex mx-auto search-bar" method="get" action="{% url 'search' %}">
+      <input name="q" class="form-control me-2" type="search" placeholder="Search for products, brands...">
+      <button class="btn btn-warning btn-lg search-btn" type="submit">Search</button>
+    </form>
+
+    <!-- Right Buttons -->
+    <ul class="navbar-nav ms-auto align-items-center">
+      {% if user.is_authenticated %}
+        <li class="nav-item position-relative me-3">
+          <a class="nav-link" href="{% url 'cart' %}">🛒 Cart</a>
+          {% if cart_count and cart_count > 0 %}
+            <span class="cart-badge">{{ cart_count }}</span>
+          {% endif %}
+        </li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'order_list' %}">📦 Orders</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">👤 Profile</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">🚪 Logout</a></li>
+      {% else %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">✍️ Signup</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">🔑 Login</a></li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>
+
+<!-- ====== MOBILE NAVBAR ====== -->
+<nav class="navbar navbar-dark custom-navbar d-flex d-lg-none fixed-top main-mobile-nav">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    <!-- Left: Logo -->
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">🛍️ Quick-Kart</a>
+
+    <!-- Right: dynamic icons -->
+    <div class="d-flex align-items-center gap-3">
+      {% if user.is_authenticated %}
+        <!-- Logged in: Cart + Profile + Offcanvas -->
+        <div class="position-relative">
+          <a class="nav-icon" href="{% url 'cart' %}">🛒</a>
+          {% if cart_count and cart_count > 0 %}
+            <span class="cart-badge">{{ cart_count }}</span>
+          {% endif %}
+        </div>
+        <a class="nav-icon" href="{% url 'profile' %}">👤</a>
+        <button class="btn btn-link nav-icon p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#sideMenu">☰</button>
+      {% else %}
+        <!-- Guest: Signup + Login only -->
+        <a class="nav-icon" href="{% url 'signup' %}">Signup</a>
+        <a class="nav-icon" href="{% url 'login' %}">Login</a>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<!-- ====== MOBILE SEARCH (DEFAULT BELOW NAVBAR) ====== -->
+<div class="mobile-search d-lg-none" id="defaultSearch">
+  <div class="container">
+    <form class="d-flex" method="get" action="{% url 'search' %}">
+      <input name="q" class="form-control me-2" type="search" placeholder="Search products...">
+      <button class="btn btn-warning search-btn-sm" type="submit">Search</button>
+    </form>
+  </div>
+</div>
+
+<!-- ====== MOBILE FIXED SEARCH (AFTER SCROLL) ====== -->
+<nav class="navbar navbar-dark bg-dark fixed-top sticky-search-nav d-lg-none" style="display:none;">
+  <div class="container-fluid">
+    <form class="d-flex w-100" method="get" action="{% url 'search' %}">
+
+      {% if user.is_authenticated %}
+        <button class="btn btn-outline-light me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sideMenu">☰</button>
+      {% endif %}
+
+      <!-- Search input -->
+      <input name="q" class="form-control me-2" type="search" placeholder="Search...">
+      <button class="btn btn-warning me-2" type="submit">Search</button>
+
+      {% if user.is_authenticated %}
+        <div class="position-relative">
+          <a class="btn btn-outline-light nav-icon" href="{% url 'cart' %}">🛒</a>
+          {% if cart_count and cart_count > 0 %}
+            <span class="cart-badge">{{ cart_count }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    </form>
+  </div>
+</nav>
+
+<!-- ====== OFFCANVAS MENU ====== -->
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="sideMenu">
+  <div class="offcanvas-header">
+    <h5>Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <a href="{% url 'home' %}"><i class="bi bi-house-fill"></i> Home</a>
+    <a href="{% url 'cart' %}"><i class="bi bi-cart-fill"></i> Cart</a>
+    <a href="{% url 'order_list' %}"><i class="bi bi-box-seam"></i> Orders</a>
+    <a href="{% url 'profile' %}"><i class="bi bi-person-fill"></i> Profile</a>
+    <hr>
+    <a href="{% url 'signup' %}"><i class="bi bi-pencil-square"></i> Signup</a>
+    <a href="{% url 'login' %}"><i class="bi bi-key-fill"></i> Login</a>
+    <a href="{% url 'logout' %}"><i class="bi bi-door-closed-fill"></i> Logout</a>
+  </div>
+</div>
+
+<!-- ====== SEARCH RESULTS ====== -->
+<div class="container-fluid mt-5 pt-5">
+  <h2 class="mt-5 fw-bold mb-3">Search Results for "{{ query }}"</h2>
+  <hr class="my-2">
+
+  <div class="row g-3">
+    {% if products %}
+      {% for product in products %}
+        <div class="col-6 col-md-4 col-lg-3">
+          <div class="card product-card h-100 shadow-sm">
+            <div class="position-relative">
+              <img src="{{ product.image.url }}" class="product-img card-img-top" alt="{{ product.name }}">
+
+              {% if product.discount_price %}
+                <span class="badge bg-danger position-absolute top-0 start-0 m-2">
+                  Sale - {{ product.discount_percent }}% off
+                </span>
+              {% endif %}
+
+              {% if product.stock == 0 %}
+                <span class="badge bg-secondary position-absolute top-0 end-0 m-2">Out of Stock</span>
+              {% endif %}
+            </div>
+
+            <div class="card-body d-flex flex-column">
+              <h6 class="card-title text-truncate fw-bold">{{ product.name }}</h6>
+              <p class="small text-muted text-truncate">{{ product.description|truncatewords:12 }}</p>
+              <div class="mb-2">
+                {% if product.discount_price %}
+                  <span class="price">₹{{ product.discount_price }}</span>
+                  <span class="old-price">₹{{ product.price }}</span>
+                {% else %}
+                  <span class="price">₹{{ product.price }}</span>
+                {% endif %}
+              </div>
+              <div class="mt-auto d-grid gap-2">
+                <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-primary btn-sm">View Details</a>
+                {% if product.stock > 0 %}
+                  <a href="{% url 'add_to_cart' product.id %}" class="btn btn-warning btn-sm">Add to Cart</a>
+                {% else %}
+                  <button class="btn btn-secondary btn-sm" disabled>Out of Stock</button>
+                {% endif %}
+              </div>
+            </div>
+
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="col-12 text-center mt-4">
+        <img src="{% static 'images/no_search_img.webp' %}" alt="No results" class="img-fluid" style="width:400px;">
+        <h5 class="mt-3">No products found for your search.</h5>
+        <a href="{% url 'home' %}" class="btn btn-dark mt-3">Go Back Home</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer mt-5 bg-dark text-light pt-4">
+  <div class="container text-center">
+    <p class="mb-0">&copy; 2025 Quick-Kart | All Rights Reserved</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// sticky mobile search scroll
+const mainNav = document.querySelector('.main-mobile-nav');
+const defaultSearch = document.querySelector('#defaultSearch');
+const stickySearch = document.querySelector('.sticky-search-nav');
+
+window.addEventListener('scroll', () => {
+  const currentScroll = window.scrollY;
+
+  if (currentScroll > 100) {
+    mainNav.style.display = "none";
+    defaultSearch.style.display = "none";
+    stickySearch.style.display = "flex";
+  } else {
+    mainNav.style.display = "flex";
+    defaultSearch.style.display = "block";
+    stickySearch.style.display = "none";
+  }
+});
+
+
+
+
+
+// show messages like sucess, error
+  document.addEventListener("DOMContentLoaded", function () {
+  var toastContainer = document.getElementById('toast-container');
+  if (!toastContainer) return;  // agar messages nahi hain to kuch na kare
+
+  var toastElList = [].slice.call(toastContainer.querySelectorAll('.toast'));
+  var toastList = toastElList.map(function (toastEl) {
+    return new bootstrap.Toast(toastEl, { delay: 3000 });
+  });
+  toastList.forEach(toast => toast.show());
+});
+
+
+
+
+
+  document.addEventListener("DOMContentLoaded", function() {
+    // Bootstrap Offcanvas element select karo
+    var offcanvasElList = [].slice.call(document.querySelectorAll('.offcanvas'));
+    offcanvasElList.forEach(function(offcanvasEl) {
+        var offcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+        offcanvas.hide(); // page load ya back aane pe hide kar do
+    });
+});
+
+// Browser back/forward cache me bhi handle karne ke liye
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) { // agar page bfcache se load ho raha hai
+        var offcanvasElList = [].slice.call(document.querySelectorAll('.offcanvas'));
+        offcanvasElList.forEach(function(offcanvasEl) {
+            var offcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+            offcanvas.hide();
+        });
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,212 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Order Detail - Quick-Kart</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/order.css' %}">
+  <style>
+    /* ====== Custom Styles (Checkout-style) ====== */
+    .order-header { font-size:1.2rem; font-weight:600; margin-bottom:1rem; }
+    .order-steps { display:flex; justify-content:space-between; margin-bottom:1.5rem; }
+    .order-step { flex:1; text-align:center; position:relative; padding:10px 0; }
+    .order-step::after { content:""; position:absolute; top:50%; right:0; width:100%; height:3px; background:#ddd; z-index:-1; transform:translateX(50%); }
+    .order-step:last-child::after { display:none; }
+    .order-step.active { font-weight:600; color:#0d6efd; }
+    .order-step.completed { font-weight:600; color:#198754; }
+    .order-card { box-shadow:0 4px 10px rgba(0,0,0,0.05); border-radius:8px; overflow:hidden; margin-bottom:2rem; }
+    .section-card { padding:20px; margin-bottom:1.5rem; border-radius:8px; background:#f8f9fa; }
+    .product-table img { width:60px; height:60px; object-fit:cover; border-radius:5px; }
+    .section-title { font-weight:600; margin-bottom:10px; border-bottom:1px solid #ddd; padding-bottom:5px; }
+    @media(max-width:576px){ .product-table th,.product-table td{ font-size:0.85rem; } }
+
+
+
+    /* Table Responsive Improvements */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.product-table {
+  min-width: 500px; /* force horizontal scroll on very small screens */
+}
+
+.product-table th,
+.product-table td {
+  vertical-align: middle;
+  white-space: nowrap; /* prevent text from breaking awkwardly */
+}
+
+@media (max-width: 768px) {
+  .product-table th,
+  .product-table td {
+    font-size: 0.9rem; /* smaller font for tablets */
+  }
+}
+
+@media (max-width: 576px) {
+  .product-table th,
+  .product-table td {
+    font-size: 0.8rem; /* smaller font for mobiles */
+  }
+  .product-table img {
+    width: 45px;
+    height: 45px;
+  }
+}
+
+  </style>
+</head>
+<body>
+
+<div class="page-wrapper d-flex flex-column min-vh-100">
+
+  <!-- ===== Navbar ===== -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
+    <div class="container-fluid">
+      <a class="navbar-brand fw-bold" href="{% url 'home' %}">🛍️ Quick-Kart</a>
+      <div class="mx-auto d-none d-lg-block">
+        <span class="navbar-text text-white fw-semibold fs-5">Order Details</span>
+      </div>
+      <button class="btn btn-outline-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu">
+        ☰
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile Title -->
+  <div class="text-center bg-light py-2 d-lg-none shadow-sm">
+    <h5 class="mb-0 fw-bold">Order Details</h5>
+  </div>
+
+  <!-- ===== Offcanvas Menu ===== -->
+  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMenu">
+    <div class="offcanvas-header">
+      <h5 class="offcanvas-title">Menu</h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+      <ul class="list-unstyled">
+        <li><a href="{% url 'home' %}" class="text-decoration-none d-block py-1">Home</a></li>
+        <li><a href="{% url 'cart' %}" class="text-decoration-none d-block py-2">Cart</a></li>
+        <li><a href="{% url 'profile' %}" class="text-decoration-none d-block py-2">Profile</a></li>
+        <li><a href="{% url 'logout' %}" class="text-decoration-none d-block py-2 text-danger">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== Main Content ===== -->
+  <div class="container my-5">
+
+    <a href="{% url 'order_list' %}" class="btn btn-outline-secondary mb-3">&larr; Back to Orders</a>
+
+    <!-- ===== Order Header ===== -->
+    <div class="order-header">Order #{{ order.id }} &nbsp;|&nbsp; Placed on {{ order.created_at|date:"d M Y H:i" }}</div>
+
+    <!-- ===== Order Status Steps ===== -->
+    <div class="order-steps">
+      {% for step in step_status %}
+      <div class="order-step {{ step.status }}">
+        {{ step.name }}
+      </div>
+      {% endfor %}
+    </div>
+
+<!-- ===== Items Section ===== -->
+<div class="section-card">
+  <h6 class="section-title">Items</h6>
+
+  <!-- Desktop & Tablet View -->
+  <div class="table-responsive d-none d-sm-block">
+    <table class="table table-bordered product-table align-middle">
+      <thead class="table-light">
+        <tr>
+          <th>Product</th>
+          <th class="text-center">Qty</th>
+          <th class="text-end">Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in order.items.all %}
+        <tr>
+          <td class="d-flex align-items-center gap-2">
+            {% if item.product.image %}
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+            {% else %}
+            <img src="{% static 'images/placeholder.png' %}" alt="No Image">
+            {% endif %}
+            <div>
+              <a href="{% url 'product_detail' item.product.id %}" class="fw-semibold">{{ item.product.name }}</a>
+            </div>
+          </td>
+          <td class="text-center">{{ item.quantity }}</td>
+          <td class="text-end">₹{{ item.total_price }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Mobile View -->
+  <div class="d-block d-sm-none">
+    {% for item in order.items.all %}
+    <div class="card mb-2 shadow-sm">
+      <div class="card-body d-flex align-items-center gap-2">
+        {% if item.product.image %}
+         <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width:60px;height:60px;object-fit:cover;border-radius:5px;">
+        {% else %}
+        <img src="{% static 'images/placeholder.png' %}" alt="No Image" style="width:60px;height:60px;object-fit:cover;border-radius:5px;">
+        {% endif %}
+        <a href="{% url 'product_detail' item.product.id %}" class="fw-semibold">
+        <div class="flex-grow-1">
+          <h6 class="mb-1">{{ item.product.name }}</h6></a>
+          <p class="mb-0 text-muted">Qty: {{ item.quantity }}</p>
+        </div>
+        <div class="fw-bold text-primary">₹{{ item.total_price }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+    <!-- ===== Delivery Address Section ===== -->
+    <div class="section-card">
+      <h6 class="section-title">Delivery Address</h6>
+      <p class="mb-0 fw-bold">Name: {{ order.address.full_name }}</p>
+      <p class="mb-0">{{ order.address.address_line }}, {{ order.address.city }}, {{ order.address.state }}, {{ order.address.pincode }}</p>
+      <p class="mb-0">Phone: {{ order.address.phone_number }}</p>
+    </div>
+
+    <!-- ===== Price Summary Section ===== -->
+    <div class="section-card">
+      <h6 class="section-title">Price Summary</h6>
+      <ul class="list-unstyled mb-0">
+        <li>Total-Price: ₹{{ total_price }}</li>
+        <li>Total-Discount: ₹{{ total_discount }}</li>
+        <li class="fw-bold">Total: ₹{{ total }}</li>
+      </ul>
+    </div>
+
+    <!-- ===== Action Buttons ===== -->
+    <div class="d-flex gap-2 flex-wrap mb-5">
+      {% if order.status == 'Pending' %}
+      <a href="#" class="btn btn-warning">Cancel Order</a>
+      {% endif %}
+      <a href="{% url 'home' %}" class="btn btn-primary">Continue Shopping</a>
+    </div>
+
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <footer class="bg-dark text-white text-center py-3 mt-auto">
+    <p class="mb-0">&copy; 2025 Quick-Kart. All rights reserved.</p>
+  </footer>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

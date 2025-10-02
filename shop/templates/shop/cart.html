@@ -1,0 +1,390 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Cart - Quick-Kart</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/cart.css' %}">
+</head>
+<body>
+
+<!-- ===== MESSAGES TOAST ===== -->
+{% if messages %}
+  <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    {% for message in messages %}
+      <div class="toast align-items-center border-0 mb-2
+        {% if message.tags == 'error' %} bg-danger text-white
+        {% elif message.tags == 'success' %} bg-success text-white
+        {% elif message.tags == 'warning' %} bg-warning text-dark
+        {% else %} bg-info text-white {% endif %}"
+        role="alert" aria-live="assertive" aria-atomic="true">
+
+        <div class="d-flex">
+          <div class="toast-body">
+            {{ message }}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                  data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- ====== DESKTOP NAVBAR ====== -->
+<nav class="navbar navbar-expand-lg navbar-dark custom-navbar d-none d-lg-flex fixed-top">
+  <div class="container-fluid align-items-center">
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">🛍️ Quick-Kart</a>
+    <form class="d-flex mx-auto search-bar" method="get" action="{% url 'search' %}">
+      <input name="q" class="form-control me-2" type="search" placeholder="Search for products, brands...">
+      <button class="btn btn-warning btn-lg search-btn" type="submit">Search</button>
+    </form>
+    <ul class="navbar-nav ms-auto align-items-center">
+      {% if user.is_authenticated %}
+        <li class="nav-item position-relative me-3">
+          <a class="nav-link" href="{% url 'cart' %}">🛒 Cart</a>
+          {% if cart_count and cart_count > 0 %}
+            <span class="cart-badge">{{ cart_count }}</span>
+          {% endif %}
+        </li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'order_list' %}">📦 Orders</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">👤 Profile</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">🚪 Logout</a></li>
+      {% else %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">✍️ Signup</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">🔑 Login</a></li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>
+
+<!-- ====== MOBILE NAVBAR ====== -->
+<nav class="navbar navbar-dark custom-navbar d-flex d-lg-none fixed-top main-mobile-nav">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">🛍️ Quick-Kart</a>
+    <div class="d-flex align-items-center gap-3">
+      <div class="position-relative">
+        <a class="nav-icon" href="{% url 'cart' %}">🛒</a>
+        {% if cart_count and cart_count > 0 %}
+          <span class="cart-badge">{{ cart_count }}</span>
+        {% endif %}
+      </div>
+      {% if user.is_authenticated %}
+        <a class="nav-icon" href="{% url 'profile' %}">👤</a>
+      {% else %}
+        <a class="nav-icon" href="{% url 'login' %}">🔑</a>
+      {% endif %}
+      <button class="btn btn-link nav-icon p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#sideMenu">☰</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ====== MOBILE SEARCH ====== -->
+<div class="mobile-search d-lg-none" id="defaultSearch">
+  <div class="container">
+    <form class="d-flex" method="get" action="{% url 'search' %}">
+      <input name="q" class="form-control me-2" type="search" placeholder="Search products...">
+      <button class="btn btn-warning search-btn-sm" type="submit">Search</button>
+    </form>
+  </div>
+</div>
+
+<!-- ====== MOBILE FIXED SEARCH ====== -->
+<nav class="navbar navbar-dark bg-dark fixed-top sticky-search-nav d-lg-none" style="display:none;">
+  <div class="container-fluid">
+    <form class="d-flex w-100" method="get" action="{% url 'search' %}">
+      <button class="btn btn-outline-light me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sideMenu">☰</button>
+      <input name="q" class="form-control me-2" type="search" placeholder="Search...">
+      <button class="btn btn-warning me-2" type="submit">Search</button>
+      <div class="position-relative">
+        <a class="btn btn-outline-light nav-icon" href="{% url 'cart' %}">🛒</a>
+        {% if cart_count and cart_count > 0 %}
+          <span class="cart-badge">{{ cart_count }}</span>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+</nav>
+
+<!-- ====== OFFCANVAS MENU ====== -->
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="sideMenu">
+  <div class="offcanvas-header">
+    <h5>Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <a href="{% url 'home' %}"><i class="bi bi-house-fill"></i> Home</a>
+    <a href="{% url 'cart' %}"><i class="bi bi-cart-fill"></i> Cart</a>
+    <a href="{% url 'order_list' %}"><i class="bi bi-box-seam"></i> Orders</a>
+    <a href="{% url 'profile' %}"><i class="bi bi-person-fill"></i> Profile</a>
+    <hr>
+    <a href="{% url 'signup' %}"><i class="bi bi-pencil-square"></i> Signup</a>
+    <a href="{% url 'login' %}"><i class="bi bi-key-fill"></i> Login</a>
+    <a href="{% url 'logout' %}"><i class="bi bi-door-closed-fill"></i> Logout</a>
+  </div>
+</div>
+
+<!-- Cart item -->
+<div class="cart-container">
+  <!-- Left: Cart items -->
+  <div class="cart-items">
+    {% for item in items %}
+      <div class="cart-card">
+        <a href="{% url 'product_detail' item.product.id %}">
+          <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+        </a>
+        <hr class="my-5">
+        <div class="cart-card-body">
+          <div>
+            <h5>{{ item.product.name }}</h5>
+
+            <!-- Size logic -->
+            {% if item.size %}
+              <p><strong>Size:</strong> {{ item.size }}</p>
+            {% else %}
+              <form method="post" action="{% url 'update_cart_item' item.id %}" class="mb-2">
+                {% csrf_token %}
+                <label for="sizeInput_{{ item.id }}" class="form-label fw-bold">Select or Enter Size:</label>
+                <input list="sizesList_{{ item.id }}" name="size" id="sizeInput_{{ item.id }}"
+                       class="form-control form-control-sm" placeholder="Choose or type size" required>
+
+                <datalist id="sizesList_{{ item.id }}">
+                  {% for s in item.product.get_sizes %}
+                    <option value="{{ s }}"></option>
+                  {% endfor %}
+                </datalist>
+
+                <!-- hidden quantity -->
+                <input type="hidden" name="quantity" value="{{ item.quantity }}">
+                <button type="submit" class="btn btn-primary btn-sm mt-2">Save</button>
+              </form>
+            {% endif %}
+
+            <p><strong>Price:</strong> ₹{{ item.product.final_price }}</p>
+            <p><strong>Total:</strong> ₹{{ item.total_price }}</p>
+          </div>
+
+          <div>
+            <!-- Quantity + Update -->
+            <form method="post" action="{% url 'update_cart_item' item.id %}" class="mb-2 d-flex gap-2 align-items-center">
+              {% csrf_token %}
+              <input type="number" name="quantity" value="{{ item.quantity }}" min="1">
+
+              <!-- hidden size preserve -->
+              <input type="hidden" name="size" value="{{  item.size|default:'' }}">
+              <button type="submit" class="btn btn-primary btn-sm">Update</button>
+            </form>
+
+            <!-- Remove button -->
+            <form method="post" action="{% url 'update_cart_item' item.id %}">
+              {% csrf_token %}
+              <button type="submit" name="remove_item" class="btn btn-danger btn-sm">Remove</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% empty %}
+  <div class="empty-cart">
+    <img src="{% static 'images/carousel2.jpg' %}" alt="Empty Cart" class="empty-cart-img">
+    <p>Your cart is empty.</p>
+    <a href="{% url 'home' %}" class="btn btn-primary mt-3">Continue Shopping</a>
+  </div>
+{% endfor %}
+  </div>
+
+
+
+
+
+
+
+{% if items %}
+  <!-- Right: Total + buttons -->
+  <div class="cart-summary">
+    <h4>Price Details ({{ items|length }} Items)</h4>
+
+    <!-- Total Product Price -->
+    <div class="d-flex justify-content-between mb-2">
+      <span>Total Product Price</span>
+      <span>₹{{ total_price }}</span>
+    </div>
+
+    <!-- Total Discounts -->
+    <div class="d-flex justify-content-between mb-2">
+      <span>Total Discounts</span>
+      <span>- ₹{{ total_discount }}</span>
+    </div>
+
+    <!-- Order Total -->
+    <hr>
+    <div class="d-flex justify-content-between fw-bold fs-5 mb-3">
+      <span>Order Total</span>
+      <span>₹{{ total }}</span>
+    </div>
+
+    <!-- Checkout + Continue buttons -->
+    <div class="d-flex gap-2 flex-column mt-3">
+      <a href="{% url 'checkout' %}" class="btn btn-success btn-lg">Proceed to Checkout</a>
+      <a href="{% url 'home' %}" class="btn btn-secondary btn-lg">Add more items</a>
+    </div>
+
+    <!-- 🔥 Image ab buttons ke neeche -->
+    <div class="cart-offer-img mt-3">
+      <img src="{% static 'images/carousel2.jpg' %}" alt="Offer Banner">
+    </div>
+  </div>
+{% endif %}
+</div>
+
+
+
+
+
+
+
+
+<!-- Related Products -->
+<hr class="my-1">
+<h4 class="mt-5 fw-bold mb-3">You May Also Like</h4>
+<hr class="my-2">
+<div class="row g-3">
+  {% for rel in related_products %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="card product-card h-100 shadow-sm">
+        <div class="position-relative">
+          <img src="{{ rel.image.url }}" class="product-img card-img-top" alt="{{ rel.name }}">
+          {% if rel.discount_price %}
+            <span class="badge bg-danger position-absolute badge-custom top-0 start-0 m-2">
+              Sale - {{ rel.discount_percent }}% off
+            </span>
+          {% endif %}
+          {% if rel.stock == 0 %}
+            <span class="badge bg-secondary position-absolute badge-custom top-0 end-0 m-2">
+              Out of Stock
+            </span>
+          {% endif %}
+        </div>
+        <div class="card-body d-flex flex-column">
+          <h6 class="card-title text-truncate fw-bold">{{ rel.name }}</h6>
+          <p class="small text-muted text-truncate">{{ rel.description|truncatewords:12 }}</p>
+          <div class="mb-2">
+            {% if rel.discount_price %}
+              <span class="price">₹{{ rel.discount_price }}</span>
+              <span class="old-price">₹{{ rel.price }}</span>
+            {% else %}
+              <span class="price">₹{{ rel.price }}</span>
+            {% endif %}
+          </div>
+          <div class="mt-auto d-grid gap-2">
+            <a href="{% url 'product_detail' rel.id %}" class="btn btn-outline-primary btn-sm">View Details</a>
+            {% if rel.stock > 0 %}
+              <a href="{% url 'add_to_cart' rel.id %}" class="btn btn-warning btn-sm">Add to Cart</a>
+            {% else %}
+              <button class="btn btn-secondary btn-sm" disabled>Out of Stock</button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ====== FOOTER ====== -->
+<footer class="footer mt-5 bg-dark text-light pt-4">
+  <div class="container">
+    <div class="row">
+      <div class="col text-center mb-2">
+        <p class="mb-1">📍 Malviya Nagar, New Delhi, India</p>
+        <p class="mb-1">✉️ mohdsaif888249@gmail.com</p>
+        <p class="mb-1">📞 Whatsapp: +91 8882492349</p>
+        <p class="mb-1">📞 Phone: +91 8882492349</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col text-center">
+        <p class="mb-0">&copy; 2025 Quick-Kart | All Rights Reserved</p>
+      </div>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Mobile navbar + search scroll behavior
+  const mainNav = document.querySelector('.main-mobile-nav');
+  const defaultSearch = document.querySelector('#defaultSearch');
+  const stickySearch = document.querySelector('.sticky-search-nav');
+
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.scrollY;
+    if (currentScroll > 100) {
+      mainNav.style.display = "none";
+      defaultSearch.style.display = "none";
+      stickySearch.style.display = "flex";
+    } else {
+      mainNav.style.display = "flex";
+      defaultSearch.style.display = "block";
+      stickySearch.style.display = "none";
+    }
+  });
+
+  // Show toast messages
+  document.addEventListener("DOMContentLoaded", function () {
+    var toastElList = [].slice.call(document.querySelectorAll('.toast'))
+    var toastList = toastElList.map(function (toastEl) {
+      return new bootstrap.Toast(toastEl, { delay: 3000 });
+    });
+    toastList.forEach(toast => toast.show());
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  document.addEventListener("DOMContentLoaded", function() {
+    // Bootstrap Offcanvas element select karo
+    var offcanvasElList = [].slice.call(document.querySelectorAll('.offcanvas'));
+    offcanvasElList.forEach(function(offcanvasEl) {
+        var offcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+        offcanvas.hide(); // page load ya back aane pe hide kar do
+    });
+});
+
+// Browser back/forward cache me bhi handle karne ke liye
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) { // agar page bfcache se load ho raha hai
+        var offcanvasElList = [].slice.call(document.querySelectorAll('.offcanvas'));
+        offcanvasElList.forEach(function(offcanvasEl) {
+            var offcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+            offcanvas.hide();
+        });
+    }
+});
+
+</script>
+
+</body>
+</html>

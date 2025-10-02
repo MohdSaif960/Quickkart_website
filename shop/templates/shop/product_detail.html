@@ -1,0 +1,580 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ product.name }} - Quick-Kart</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/product_detail.css' %}">
+  <style>
+.max-msg {
+  position: relative;
+  cursor: help; /* show hover cursor */
+  font-size: 14px;
+  color: #6c757d; /* Bootstrap muted color jaisa look */
+}
+
+.max-msg.highlight {
+  background: red;
+  color: black;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+</style>
+</head>
+<body>
+
+{% if messages %}
+  <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    {% for message in messages %}
+      <div class="toast align-items-center border-0 mb-2
+        {% if message.tags == 'error' %} bg-danger text-white
+        {% elif message.tags == 'success' %} bg-success text-white
+        {% elif message.tags == 'warning' %} bg-warning text-dark
+        {% else %} bg-info text-white {% endif %}"
+        role="alert" aria-live="assertive" aria-atomic="true">
+
+        <div class="d-flex">
+          <div class="toast-body">
+            {% if message.tags == 'success' %} <i class="bi bi-check-circle-fill me-2"></i>
+            {% elif message.tags == 'error' %} <i class="bi bi-x-circle-fill me-2"></i>
+            {% elif message.tags == 'warning' %} <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% else %} <i class="bi bi-info-circle-fill me-2"></i> {% endif %}
+            {{ message }}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                  data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- ====== DESKTOP NAVBAR ====== -->
+<nav class="navbar navbar-expand-lg navbar-dark custom-navbar d-none d-lg-flex fixed-top">
+  <div class="container-fluid align-items-center">
+    <!-- Left side -->
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">🛍️ Quick-Kart</a>
+
+    <!-- Center Search -->
+    <form class="d-flex mx-auto search-bar" method="get" action="{% url 'search' %}">
+      <input name="q" class="form-control me-2" type="search" placeholder="Search for products, brands...">
+      <button class="btn btn-warning btn-lg search-btn" type="submit">Search</button>
+    </form>
+
+    <!-- Right Buttons -->
+    <ul class="navbar-nav ms-auto align-items-center">
+      {% if user.is_authenticated %}
+        <li class="nav-item position-relative me-3">
+          <a class="nav-link" href="{% url 'cart' %}">🛒 Cart</a>
+          {% if cart_count and cart_count > 0 %}
+            <span class="cart-badge">{{ cart_count }}</span>
+          {% endif %}
+        </li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'order_list' %}">📦 Orders</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">👤 Profile</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">🚪 Logout</a></li>
+      {% else %}
+        <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">✍️ Signup</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">🔑 Login</a></li>
+      {% endif %}
+    </ul>
+  </div>
+</nav>
+
+
+
+<!-- ====== MOBILE NAVBAR ====== -->
+<nav class="navbar navbar-dark custom-navbar d-flex d-lg-none fixed-top main-mobile-nav">
+  <div class="container-fluid d-flex justify-content-between align-items-center">
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">🛍️ Quick-Kart</a>
+    <div class="d-flex align-items-center gap-3">
+
+      {% if user.is_authenticated %}
+        <!-- Cart -->
+        <div class="position-relative">
+          <a class="nav-icon" href="{% url 'cart' %}">🛒</a>
+          {% if cart_count and cart_count > 0 %}
+            <span class="cart-badge">{{ cart_count }}</span>
+          {% endif %}
+        </div>
+
+        <!-- Profile -->
+        <a class="nav-icon" href="{% url 'profile' %}">👤</a>
+
+        <!-- Logout -->
+       <!-- <a class="nav-icon" href="{% url 'logout' %}">🚪</a> -->
+
+        <!-- Offcanvas Menu -->
+        <button class="btn btn-link nav-icon p-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#sideMenu">☰</button>
+
+      {% else %}
+        <!-- Signup -->
+        <a class="nav-icon" href="{% url 'signup' %}">Signup</a>
+        <!-- Login -->
+        <a class="nav-icon" href="{% url 'login' %}">Login</a>
+      {% endif %}
+
+    </div>
+  </div>
+</nav>
+
+<!-- ====== MOBILE SEARCH ====== -->
+<div class="mobile-search d-lg-none" id="defaultSearch">
+  <div class="container">
+    <form class="d-flex" method="get" action="{% url 'search' %}">
+      <input name="q" class="form-control me-2" type="search" placeholder="Search products...">
+      <button class="btn btn-warning search-btn-sm" type="submit">Search</button>
+    </form>
+  </div>
+</div>
+
+
+
+<!-- ====== MOBILE FIXED SEARCH ====== -->
+<nav class="navbar navbar-dark bg-dark fixed-top sticky-search-nav d-lg-none" style="display:none;">
+  <div class="container-fluid">
+    <form class="d-flex w-100" method="get" action="{% url 'search' %}">
+
+      {% if user.is_authenticated %}
+        <!-- Left: Offcanvas menu -->
+        <button class="btn btn-outline-light me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sideMenu">☰</button>
+      {% endif %}
+
+      <!-- Search bar (always visible) -->
+      <input name="q" class="form-control me-2" type="search" placeholder="Search...">
+      <button class="btn btn-warning me-2" type="submit">Search</button>
+
+      {% if user.is_authenticated %}
+        <!-- Right: Cart -->
+        <div class="position-relative">
+          <a class="btn btn-outline-light nav-icon" href="{% url 'cart' %}">🛒</a>
+          {% if cart_count and cart_count > 0 %}
+            <span class="cart-badge">{{ cart_count }}</span>
+          {% endif %}
+        </div>
+      {% endif %}
+
+    </form>
+  </div>
+</nav>
+
+<!-- ====== OFFCANVAS MENU ====== -->
+
+<div class="offcanvas offcanvas-end" tabindex="-1" id="sideMenu">
+  <div class="offcanvas-header">
+    <h5>Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body">
+    <a href="{% url 'home' %}"><i class="bi bi-house-fill"></i> Home</a>
+    <a href="{% url 'cart' %}"><i class="bi bi-cart-fill"></i> Cart</a>
+    <a href="{% url 'order_list' %}"><i class="bi bi-box-seam"></i> Orders</a>
+    <a href="{% url 'profile' %}"><i class="bi bi-person-fill"></i> Profile</a>
+    <hr>
+    <a href="{% url 'signup' %}"><i class="bi bi-pencil-square"></i> Signup</a>
+    <a href="{% url 'login' %}"><i class="bi bi-key-fill"></i> Login</a>
+    <a href="{% url 'logout' %}"><i class="bi bi-door-closed-fill"></i> Logout</a>
+  </div>
+</div>
+
+<!-- ===== PRODUCT DETAIL ===== -->
+<div class="container mt-5 pt-5">
+  <div class="product-detail-box">
+    <div class="row align-items-start">
+
+      <!-- Left: Product Image -->
+      <div class="col-md-6 text-center mb-4 mb-md-0">
+        <div class="detail-image-wrapper">
+          <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid product-img detail-img">
+          {% if product.discount_price %}
+          <span class="discount-badge">
+            Sale -{{ product.discount_percent }}% off
+          </span>
+          {% endif %}
+          {% if product.stock == 0 %}
+            <span class="discount-badge">Out of Stock</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Right: Product Info -->
+      <div class="col-md-6 product-detail-info">
+
+        <h2 class="fw-bold">{{ product.name }}</h2>
+
+        <p class="text-muted">{{ product.description }}</p>
+
+
+        <!-- 🔹 Brand show -->
+        <p><strong>Brand:</strong> {{ product.brand }}</p>
+        <p><strong>Stock:</strong> {{ product.stock }}</p>
+
+        <div class="mb-3">
+          {% if product.discount_price %}
+          <span class="price">₹{{ product.final_price }}</span>
+          <span class="old-price">₹{{ product.price }}</span>
+          {% else %}
+          <span class="price">₹{{ product.price }}</span>
+          {% endif %}
+        </div>
+
+        {% if product.stock > 0 %}
+          <form method="post" action="{% url 'add_to_cart' product.id %}" id="cartForm">
+            {% csrf_token %}
+
+            <!-- 🔹 Size input with datalist -->
+            {% if sizes %}
+              <div class="mb-3">
+                <label for="sizeInput" class="form-label fw-bold">Select or Enter Size:</label>
+                <input list="sizesList" name="size" id="sizeInput" class="form-control form-control-lg" placeholder="Choose or type size" required>
+
+                <datalist id="sizesList">
+                  {% for s in sizes %}
+                    <option value="{{ s }}"></option>
+                  {% endfor %}
+                </datalist>
+              </div>
+            {% endif %}
+           <div class="quantity-wrapper mb-3">
+             <label class="form-label fw-bold">Quantity:</label>
+             <div class="quantity-selector">
+               <button type="button" class="qty-btn decrease" id="decreaseQty">−</button>
+               <input type="number" id="quantityInput" name="quantity" value="1" min="1" max="{{ product.stock }}">
+               <button type="button" class="qty-btn increase" id="increaseQty">+</button>
+             </div>
+             <small class="max-msg">Max {{ product.stock }} items available</small>
+           </div>
+
+
+            <button type="submit" class="btn btn-warning btn-lg" id="addCartBtn">Add to Cart</button>
+            <button type="button" class="btn btn-success btn-lg" id="checkoutBtn">Buy Now</button>
+            <a href="{% url 'cart' %}" class="btn btn-primary btn-lg d-none" id="goCartBtn">Go to Cart</a>
+          </form>
+        {% else %}
+          <button class="btn btn-secondary btn-lg" disabled>Out of Stock</button>
+        {% endif %}
+
+         <div id="cartMessage" class="alert  mt-3 d-none"></div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+  <!-- Related Products -->
+  <hr class="my-2">
+  <h4 class="mt-5 fw-bold mb-3">You May Also Like</h4>
+ <hr class="my-2">
+  <div class="row g-3">
+    {% for rel in related_products %}
+      <div class="col-6 col-md-4 col-lg-3">
+        <div class="card product-card h-100 shadow-sm">
+          <div class="position-relative">
+            <img src="{{ rel.image.url }}" class="product-img card-img-top" alt="{{ rel.name }}">
+            {% if rel.discount_price %}
+              <span class="badge bg-danger position-absolute badge-custom top-0 start-0 m-2">Sale - {{ rel.discount_percent }}% off</span>
+            {% endif %}
+            {% if rel.stock == 0 %}
+              <span class="badge bg-secondary position-absolute badge-custom top-0 end-0 m-2">Out of Stock</span>
+            {% endif %}
+          </div>
+          <div class="card-body d-flex flex-column">
+            <h6 class="card-title text-truncate fw-bold">{{ rel.name }}</h6>
+            <p class="small text-muted text-truncate">{{ rel.description|truncatewords:12 }}</p>
+            <div class="mb-2">
+              {% if rel.discount_price %}
+                <span class="price">₹{{ rel.discount_price }}</span>
+                <span class="old-price">₹{{ rel.price }}</span>
+              {% else %}
+                <span class="price">₹{{ rel.price }}</span>
+              {% endif %}
+            </div>
+            <div class="mt-auto d-grid gap-2">
+              <a href="{% url 'product_detail' rel.id %}" class="btn btn-outline-primary btn-sm">View Details</a>
+              {% if rel.stock > 0 %}
+                <a href="{% url 'add_to_cart' rel.id %}" class="btn btn-warning btn-sm">Add to Cart</a>
+              {% else %}
+                <button class="btn btn-secondary btn-sm" disabled>Out of Stock</button>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+
+
+
+
+<!-- ====== FOOTER ====== -->
+<footer class="footer mt-5 bg-dark text-light pt-4">
+  <div class="container">
+    <div class="row">
+      <div class="col text-center mb-2">
+        <p class="mb-1">📍 Malviya Nagar, New Delhi, India</p>
+        <p class="mb-1">✉️ mohdsaif888249@gmail.com</p>
+        <p class="mb-1">📞 Whatsapp: +91 8882492349</p>
+        <p class="mb-1">📞 Phone: +91 8882492349</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col text-center">
+        <p class="mb-0">&copy; 2025 Quick-Kart | All Rights Reserved</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Mobile navbar + search scroll behavior
+  const mainNav = document.querySelector('.main-mobile-nav');
+  const defaultSearch = document.querySelector('#defaultSearch');
+  const stickySearch = document.querySelector('.sticky-search-nav');
+
+  window.addEventListener('scroll', () => {
+    const currentScroll = window.scrollY;
+    if (currentScroll > 100) {
+      mainNav.style.display = "none";
+      defaultSearch.style.display = "none";
+      stickySearch.style.display = "flex";
+    } else {
+      mainNav.style.display = "flex";
+      defaultSearch.style.display = "block";
+      stickySearch.style.display = "none";
+    }
+  });
+
+
+
+// show messages like sucess, error
+document.addEventListener("DOMContentLoaded", function () {
+  var toastContainer = document.getElementById('toast-container');
+  if (!toastContainer) return;  // agar messages nahi hain to kuch na kare
+
+  var toastElList = [].slice.call(toastContainer.querySelectorAll('.toast'));
+  var toastList = toastElList.map(function (toastEl) {
+    return new bootstrap.Toast(toastEl, { delay: 3000 });
+  });
+  toastList.forEach(toast => toast.show());
+});
+
+
+
+if (cartForm) {
+  // Add to Cart
+  addCartBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    fetch(cartForm.action, {
+      method: "POST",
+      body: new FormData(cartForm),
+      headers: {
+        "X-Requested-With": "XMLHttpRequest"
+      }
+    })
+    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+    .then(result => {
+      cartMessage.classList.remove("d-none");
+
+      if (result.status === 200 && result.body.success) {
+        // ✅ Success
+        cartMessage.classList.remove("alert-danger");
+        cartMessage.classList.add("alert-success");
+        cartMessage.textContent = result.body.success;
+
+        // Hide Add + Checkout
+        addCartBtn.classList.add("d-none");
+        checkoutBtn.classList.add("d-none");
+
+        // Show Go to Cart
+        goCartBtn.classList.remove("d-none");
+
+      } else if (result.body.error) {
+        // ❌ Error (login / stock issue)
+        cartMessage.classList.remove("alert-success");
+        cartMessage.classList.add("alert-danger");
+        cartMessage.textContent = result.body.error;
+      }
+
+      // ✅ Auto-hide message after 3 seconds
+      setTimeout(() => {
+        cartMessage.classList.add("d-none");
+      }, 2000); // 3000ms = 3 seconds
+
+    })
+    .catch(err => {
+      console.error("Error:", err);
+    });
+  });
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const qtyInput = document.getElementById("quantityInput");
+const decreaseBtn = document.getElementById("decreaseQty");
+const increaseBtn = document.getElementById("increaseQty");
+const maxMsg = document.querySelector(".max-msg"); // Max available msg
+
+// Set tooltip text
+const maxStock = parseInt(qtyInput.getAttribute("max"));
+maxMsg.setAttribute("title", `Only ${maxStock} items available`);
+
+decreaseBtn.addEventListener("click", () => {
+  let val = parseInt(qtyInput.value) || 1;
+  if (val > 1) qtyInput.value = val - 1;
+});
+
+increaseBtn.addEventListener("click", () => {
+  let val = parseInt(qtyInput.value) || 1;
+  if (val < maxStock) {
+    qtyInput.value = val + 1;
+  } else {
+    // trigger tooltip-like flash
+    maxMsg.classList.add("highlight");
+    setTimeout(() => maxMsg.classList.remove("highlight"), 800);
+    maxMsg.focus(); // force hover-like effect
+  }
+});
+
+qtyInput.addEventListener("input", () => {
+  let val = parseInt(qtyInput.value) || 1;
+  if (val < 1) {
+    qtyInput.value = 1;
+  } else if (val > maxStock) {
+    qtyInput.value = maxStock;
+    // trigger tooltip-like flash
+    maxMsg.classList.add("highlight");
+    setTimeout(() => maxMsg.classList.remove("highlight"), 800);
+    maxMsg.focus();
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if (checkoutBtn) {
+  checkoutBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+
+    // ✅ Login check
+    {% if not user.is_authenticated %}
+      cartMessage.classList.remove("d-none");
+      cartMessage.classList.remove("alert-success");
+      cartMessage.classList.add("alert-danger");
+      cartMessage.textContent = "Please login before buying.";
+      setTimeout(() => cartMessage.classList.add("d-none"), 3000);
+      return;
+    {% endif %}
+
+    // ✅ Stock check
+    const stock = parseInt("{{ product.stock }}");
+    if (stock <= 0) {
+      cartMessage.classList.remove("d-none");
+      cartMessage.classList.remove("alert-success");
+      cartMessage.classList.add("alert-danger");
+      cartMessage.textContent = "Sorry, this product is out of stock.";
+      setTimeout(() => cartMessage.classList.add("d-none"), 3000);
+      return;
+    }
+
+    // ✅ Size check if applicable
+    const sizeInput = document.getElementById('sizeInput');
+    if (sizeInput && !sizeInput.value) {
+      cartMessage.classList.remove("d-none");
+      cartMessage.classList.remove("alert-success");
+      cartMessage.classList.add("alert-danger");
+      cartMessage.textContent = "Please select or enter a size.";
+      setTimeout(() => cartMessage.classList.add("d-none"), 3000);
+      return;
+    }
+
+    // ✅ Redirect to checkout
+    const qty = document.getElementById('quantityInput').value || 1;
+    let checkoutUrl = "{% url 'checkout' %}?product_id={{ product.id }}&quantity=" + qty;
+    if (sizeInput) {
+      checkoutUrl += "&size=" + encodeURIComponent(sizeInput.value);
+    }
+    window.location.href = checkoutUrl;
+  });
+}
+
+
+
+
+  document.addEventListener("DOMContentLoaded", function() {
+    // Bootstrap Offcanvas element select karo
+    var offcanvasElList = [].slice.call(document.querySelectorAll('.offcanvas'));
+    offcanvasElList.forEach(function(offcanvasEl) {
+        var offcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+        offcanvas.hide(); // page load ya back aane pe hide kar do
+    });
+});
+
+// Browser back/forward cache me bhi handle karne ke liye
+window.addEventListener('pageshow', function(event) {
+    if (event.persisted) { // agar page bfcache se load ho raha hai
+        var offcanvasElList = [].slice.call(document.querySelectorAll('.offcanvas'));
+        offcanvasElList.forEach(function(offcanvasEl) {
+            var offcanvas = bootstrap.Offcanvas.getOrCreateInstance(offcanvasEl);
+            offcanvas.hide();
+        });
+    }
+});
+
+</script>
+
+</body>
+</html>

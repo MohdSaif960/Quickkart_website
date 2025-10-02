@@ -1,0 +1,224 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkout - Quick-Kart</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+</head>
+<body>
+
+<!-- ====== NAVBAR ====== -->
+<nav class="custom-navbar">
+  <a class="navbar-brand" href="{% url 'home' %}">🛍️ Quick-Kart</a>
+  <div class="nav-center">Checkout</div>
+  <div class="nav-right">
+    <a class="nav-icon" href="{% url 'cart' %}">🛒</a>
+    {% if cart_count and cart_count > 0 %}
+      <span class="cart-badge">{{ cart_count }}</span>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- ====== TOAST MESSAGES ====== -->
+{% if messages %}
+<div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+  {% for message in messages %}
+    <div class="toast align-items-center border-0 mb-2
+      {% if message.tags == 'error' %} bg-danger text-white
+      {% elif message.tags == 'success' %} bg-success text-white
+      {% elif message.tags == 'warning' %} bg-warning text-dark
+      {% else %} bg-info text-white {% endif %}"
+      role="alert" aria-live="assertive" aria-atomic="true">
+
+      <div class="d-flex">
+        <div class="toast-body">{{ message }}</div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ====== CHECKOUT STEPS THUMBNAIL ====== -->
+<div class="container mt-0.1">
+  <div class="checkout-steps">
+    <div class="checkout-step active {% if step > 1 %}completed{% endif %}">Checkout</div>
+    <div class="checkout-step {% if step > 1 %}active{% endif %} {% if step > 2 %}completed{% endif %}">Payment</div>
+    <div class="checkout-step {% if step > 2 %}active completed{% endif %}">Order</div>
+  </div>
+</div>
+
+<!-- ====== CHECKOUT PAGE ====== -->
+<div class="container cart-container mt-4">
+  <div class="row g-4">
+    <!-- Shipping Address -->
+    <div class="col-lg-7 position-relative">
+      <div class="card mb-4">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          Shipping Address
+        </div>
+        <div class="card-body">
+          <form method="post" action="{% url 'place_order' %}">
+            {% csrf_token %}
+            <!-- Address Dropdown -->
+            <div class="mb-3">
+              <select name="address" id="address-select" class="form-select" required>
+                <option value="">Select Address</option>
+                {% for address in addresses %}
+                  <option value="{{ address.id }}"
+                    data-fullname="{{ address.full_name }}"
+                    data-addressline="{{ address.address_line }}"
+                    data-landmark="{{ address.landmark }}"
+                    data-city="{{ address.city }}"
+                    data-state="{{ address.state }}"
+                    data-pincode="{{ address.pincode }}"
+                    data-phone="{{ address.phone_number }}">
+                    {{ address.full_name }}, {{ address.city }}
+                  </option>
+                {% empty %}
+                  <option value="">No addresses available</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Full Address Preview Card -->
+            <div id="address-preview" class="card p-3 mb-3" style="display:none; background-color:#f0f0ff;">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong id="preview-name"></strong>
+                <a href="#" id="preview-update-btn" class="btn btn-warning btn-sm" style="font-size:15px">Edit</a>
+              </div>
+              <p id="preview-address" class="mb-1"></p>
+              <p id="preview-phone"></p>
+            </div>
+
+            <a href="{% url 'address_add' %}" class="btn btn-link">+ Add New Address</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="col-lg-5">
+      <div class="card mb-4">
+        <div class="card-header bg-secondary text-white">Order Summary</div>
+        <div class="card-body">
+          {% if single_product %}
+            <table class="table table-bordered">
+              <thead>
+                <tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{{ single_product.name }}</td>
+                  <td>{{ single_quantity }}</td>  <!-- 👈 ab dynamic qty -->
+                  <td>₹{{ single_product.discount_price|default:single_product.price }}</td>
+                  <td>₹{{ total }}</td>   <!-- <-- use the total calculated in view -->
+                </tr>
+              </tbody>
+            </table>
+               <!-- 🔹 Hidden input for Buy Now -->
+               <input type="hidden" name="product_id" value="{{ single_product.id }}">
+               <input type="hidden" name="quantity" value="{{ single_quantity }}">
+               <input type="hidden" name="size" value="{{ single_size }}">
+          {% else %}
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead>
+                  <tr><th>Product</th><th>Qty</th><th>Price</th><th>Total</th></tr>
+                </thead>
+                <tbody>
+                  {% for item in items %}
+                    <tr>
+                      <td>{{ item.product.name }}</td>
+                      <td>{{ item.quantity }}</td>
+                      <td>₹{{ item.product.final_price }}</td>
+                      <td>₹{{ item.total_price }}</td>
+                    </tr>
+                  {% empty %}
+                    <tr><td colspan="4" class="text-center">Cart is empty.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% endif %}
+        </div>
+        <div class="card-footer text-end fw-bold fs-5">
+          Total: ₹{{ total }}
+        </div>
+        <div class="card-footer d-flex gap-2 flex-column">
+          <button type="submit" class="btn btn-success btn-lg">Place Order</button>
+          <a href="{% url 'home' %}" class="btn btn-secondary btn-lg">Continue Shopping</a>
+        </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== FOOTER ====== -->
+<footer class="footer mt-5 bg-dark text-light pt-4">
+  <div class="container">
+    <div class="row text-center">
+      <div class="col">
+        <p class="mb-1">📍 Malviya Nagar, New Delhi, India</p>
+        <p class="mb-1">✉️ mohdsaif888249@gmail.com</p>
+        <p class="mb-1">📞 Whatsapp: +91 8882492349</p>
+        <p class="mb-1">📞 Phone: +91 8882492349</p>
+      </div>
+    </div>
+    <div class="row text-center mt-2">
+      <div class="col">
+        <p class="mb-0">&copy; 2025 Quick-Kart | All Rights Reserved</p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  // Show toast messages
+  var toastElList = [].slice.call(document.querySelectorAll('.toast'));
+  var toastList = toastElList.map(function (toastEl) {
+    return new bootstrap.Toast(toastEl, { delay: 3000 });
+  });
+  toastList.forEach(toast => toast.show());
+
+  // ===== Address Preview Logic =====
+  const addressSelect = document.getElementById('address-select');
+  const previewCard = document.getElementById('address-preview');
+  const previewName = document.getElementById('preview-name');
+  const previewAddress = document.getElementById('preview-address');
+  const previewPhone = document.getElementById('preview-phone');
+  const previewUpdateBtn = document.getElementById('preview-update-btn');
+
+  addressSelect.addEventListener('change', function() {
+    const selectedOption = addressSelect.selectedOptions[0];
+    if (selectedOption.value) {
+      previewCard.style.display = 'block';
+      previewName.textContent = selectedOption.dataset.fullname;
+      let addressText = selectedOption.dataset.addressline;
+      if (selectedOption.dataset.landmark) addressText += ', ' + selectedOption.dataset.landmark;
+      addressText += ', ' + selectedOption.dataset.city + ', ' + selectedOption.dataset.state + ', ' + selectedOption.dataset.pincode;
+      previewAddress.textContent = addressText;
+      previewPhone.textContent = selectedOption.dataset.phone;
+
+      previewUpdateBtn.href = '/address/' + selectedOption.value + '/edit/';
+    } else {
+      previewCard.style.display = 'none';
+    }
+  });
+});
+
+
+
+
+
+</script>
+
+</body>
+</html>

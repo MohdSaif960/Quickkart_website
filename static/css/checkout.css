@@ -1,0 +1,316 @@
+/* ====== GLOBAL ====== */
+body {
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  margin: 0;
+  padding: 0;
+  padding-top: 120px; /* navbar space */
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+main {
+  flex: 1;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ====== NAVBAR ====== */
+.custom-navbar {
+  background-color: #131921;
+  height: 70px;
+  z-index: 1030;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  color: #fff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.nav-center {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.nav-right {
+  position: relative;
+}
+
+.nav-icon {
+  font-size: 1.7rem;
+  color: #fff;
+}
+
+.nav-icon:hover {
+  color: #febd69;
+}
+
+/* ====== CART BADGE ====== */
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: #ff4136;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 3px 7px;
+  min-width: 20px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+/* ====== CHECKOUT STEPS ====== */
+.checkout-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px auto 35px;
+  max-width: 1000px;
+  flex-wrap: wrap;
+  gap: 15px;
+  counter-reset: step;
+}
+.checkout-step {
+  flex: 1;
+  text-align: center;
+  position: relative;
+  padding: 12px 5px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #6c757d;
+}
+.checkout-step::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -50%;
+  height: 2px;
+  background: #dee2e6;
+  width: 100%;
+  z-index: -1;
+  transform: translateY(-50%);
+}
+.checkout-step:last-child::after {
+  display: none;
+}
+.checkout-step.active {
+  color: #0d6efd;
+}
+.checkout-step.completed {
+  color: #28a745;
+}
+.checkout-step.completed::before {
+  content: '✔';
+  display: block;
+  margin: 0 auto 5px;
+  font-size: 1.2rem;
+  color: #28a745;
+}
+.checkout-step:not(.completed)::before {
+  content: counter(step);
+  counter-increment: step;
+  display: block;
+  margin: 0 auto 5px;
+  font-size: 1rem;
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  border: 2px solid #6c757d;
+  border-radius: 50%;
+  background: #fff;
+  color: #6c757d;
+}
+
+/* ====== CHECKOUT PAGE CONTAINER ====== */
+.cart-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ====== ADDRESS CARD ====== */
+.card {
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.1);
+}
+.card-header {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+.card-body {
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.card-body select {
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: 8px;
+}
+.card-footer {
+  font-size: 1rem;
+}
+
+/* ====== ORDER SUMMARY TABLE ====== */
+.table {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.table th {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+.table td {
+  vertical-align: middle;
+}
+
+/* ====== BUTTONS ====== */
+.btn {
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 10px 18px;
+  cursor: pointer;
+}
+
+.btn-success {
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+}
+.btn-success:hover {
+  background-color: #218838;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
+}
+.btn-secondary:hover {
+  background-color: #5a6268;
+}
+
+.btn-link {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #0d6efd;
+}
+
+/* ====== FOOTER ====== */
+
+
+
+
+/* ====== FOOTER ====== */
+.footer {
+  background: #131921;
+  color: #fff;
+  padding: 40px 20px;
+}
+
+.footer h5 {
+  color: #febd69;
+  margin-bottom: 15px;
+}
+
+.footer a {
+  display: block;
+  color: #ddd;
+  text-decoration: none;
+  margin-bottom: 5px;
+}
+
+.footer a:hover {
+  color: #febd69;
+}
+
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 992px) {
+  .cart-container .row {
+    flex-direction: column;
+  }
+  .card {
+    margin-bottom: 20px;
+  }
+
+
+/* ====== FOOTER ====== */
+.footer {
+  background: #131921;
+  color: #fff;
+  padding: 40px 20px;
+}
+
+.footer h5 {
+  color: #febd69;
+  margin-bottom: 5px;
+}
+
+
+.footer a:hover {
+  color: #febd69;
+}
+
+}
+@media (max-width: 576px) {
+  body {
+    padding-top: 90px;
+  }
+  .checkout-step {
+    font-size: 0.9rem;
+  }
+  .navbar-brand {
+    font-size: 1.2rem;
+  }
+  .nav-center {
+    font-size: 1.1rem;
+  }
+  .nav-icon {
+    font-size: 1.4rem;
+  }
+
+
+}
+
+/* by default footer push hoga content ke niche */
+.page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.footer {
+  margin-top: auto;
+}
+
+/* sirf tablets me apply karna ho to */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+  }
+}
+
+
+

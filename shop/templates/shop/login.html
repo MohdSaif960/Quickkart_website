@@ -1,0 +1,176 @@
+{% load static %}
+{% load crispy_forms_tags %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - QuickKart</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/order.css' %}">
+    <style>
+        body {
+            background: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-top: 70px; /* for navbar spacing */
+            min-height: 100vh;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 12px 25px rgba(0,0,0,0.1);
+            background-color: #ffffff;
+            padding: 2rem;
+            max-width: 400px;
+            margin: auto;
+        }
+
+        .card h2 {
+            font-weight: 600;
+            color: #333333;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-primary {
+            background-color: #4e73df;
+            border: none;
+            font-weight: 500;
+            padding: 0.6rem;
+            border-radius: 8px;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background-color: #2e59d9;
+        }
+
+        a {
+            text-decoration: none;
+            color: #4e73df;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            background-color: #343a40;
+            color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        @media (max-width: 576px) {
+            .card {
+                padding: 1.5rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+{% if messages %}
+  <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    {% for message in messages %}
+      <div class="toast align-items-center border-0 mb-2
+        {% if message.tags == 'error' %} bg-danger text-white
+        {% elif message.tags == 'success' %} bg-success text-white
+        {% elif message.tags == 'warning' %} bg-warning text-dark
+        {% else %} bg-info text-white {% endif %}"
+        role="alert" aria-live="assertive" aria-atomic="true">
+
+        <div class="d-flex">
+          <div class="toast-body">
+            {% if message.tags == 'success' %} <i class="bi bi-check-circle-fill me-2"></i>
+            {% elif message.tags == 'error' %} <i class="bi bi-x-circle-fill me-2"></i>
+            {% elif message.tags == 'warning' %} <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% else %} <i class="bi bi-info-circle-fill me-2"></i> {% endif %}
+            {{ message }}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                  data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="page-wrapper d-flex flex-column min-vh-100">
+
+<!-- ===== Navbar ===== -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm fixed-top">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="{% url 'home' %}">🛍️ Quick-Kart</a>
+        <button class="btn btn-outline-light" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu">
+            ☰
+        </button>
+    </div>
+</nav>
+
+<!-- ===== Offcanvas Menu ===== -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasMenu">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title">Menu</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <ul class="list-unstyled">
+            <li><a href="{% url 'home' %}" class="d-block py-2">Home</a></li>
+            <li><a href="{% url 'login' %}" class="d-block py-2 fw-bold text-primary">Login</a></li>
+            <li><a href="{% url 'signup' %}" class="d-block py-2">Sign Up</a></li>
+        </ul>
+    </div>
+</div>
+
+<!-- ===== Login Form ===== -->
+<div class="d-flex justify-content-center align-items-center" style="min-height: calc(100vh - 50px);">
+    <div class="card">
+        <h2>Login</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <button type="submit" class="btn btn-primary mt-3">Login</button>
+        </form>
+        <p class="text-center mt-3">
+            Don't have an account? <a href="{% url 'signup' %}">Signup here</a>.
+        </p>
+    </div>
+</div>
+
+<!-- ===== Footer ===== -->
+<footer>
+    <div class="container">
+        <p>© {{ now|date:"Y" }} Quick-Kart. All rights reserved.</p>
+    </div>
+</footer>
+</div>
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+// Show messages like success, error
+document.addEventListener("DOMContentLoaded", function () {
+  var toastContainer = document.getElementById('toast-container');
+  if (!toastContainer) return;  // agar messages nahi hain to kuch na kare
+
+  var toastElList = [].slice.call(toastContainer.querySelectorAll('.toast'));
+  var toastList = toastElList.map(function (toastEl) {
+    return new bootstrap.Toast(toastEl, { delay: 3000 });
+  });
+  toastList.forEach(toast => toast.show());
+});
+
+</script>
+</body>
+</html>
