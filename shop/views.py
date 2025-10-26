@@ -334,6 +334,9 @@ def address_update_view(request, pk):
 # ----------------------------
 # Place Order
 # ----------------------------
+from django.core.mail import send_mail
+from django.conf import settings
+
 @login_required
 def place_order_view(request):
     if request.method == 'POST':
@@ -349,8 +352,6 @@ def place_order_view(request):
             # Buy Now Flow
             # ----------------------------
             product = get_object_or_404(Product, id=product_id)
-            #quantity = request.POST.get('quantity', 1)
-
 
             # ✅ stock check
             if product.stock < 1:
@@ -362,7 +363,6 @@ def place_order_view(request):
                 user=request.user,
                 address=address,
                 total_amount=product.final_price * quantity
-
             )
 
             # ✅ order item create
@@ -377,6 +377,14 @@ def place_order_view(request):
             # ✅ stock reduce
             product.stock -=  quantity   # ✔️ ab jitna order hua utna kam hoga
             product.save()
+
+            # ----------------------------
+            # SEND EMAIL NOTIFICATION
+            # ----------------------------
+            subject = f"New Order by {request.user.username} - Order ID #{order.id}"
+            message = f"User: {request.user.username}\nEmail: {request.user.email}\nProduct: {product.name}\nQuantity: {quantity}\nSize: {size}\nTotal Amount: {order.total_amount}"
+            recipient_list = ['mohdsaif88824923@gmail.com']  # yaha apna email daalo
+            send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
 
             messages.success(request, "Order placed successfully!")
             return redirect('order_success', order_id=order.id)
@@ -415,6 +423,16 @@ def place_order_view(request):
                 # ✅ stock reduce
                 item.product.stock -= item.quantity
                 item.product.save()
+
+            # ----------------------------
+            # SEND EMAIL NOTIFICATION FOR CART ORDERS
+            # ----------------------------
+            subject = f"New Order by {request.user.username} - Order ID #{order.id}"
+            message = f"User: {request.user.username}\nEmail: {request.user.email}\nTotal Amount: {order.total_amount}\nProducts:\n"
+            for item in items:
+                message += f"- {item.product.name} | Quantity: {item.quantity} | Size: {item.size}\n"
+            recipient_list = ['mohdsaif88824923@gmail.com']  # yaha apna email daalo
+            send_mail(subject, message, settings.EMAIL_HOST_USER, recipient_list)
 
             # ✅ cart empty
             cart.items.all().delete()

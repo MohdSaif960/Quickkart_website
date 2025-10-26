@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'shop',
+    #'shop',
+    'shop.apps.ShopConfig',  # sirf 'shop' mat likho, ye updated hona chahiye
+
     "crispy_forms",
     "crispy_bootstrap5",
 ]
@@ -143,3 +145,19 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+
+
+
+
+
+
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'mohdsaif88824923@gmail.com'
+EMAIL_HOST_PASSWORD = 'vqcp xrye tetn xhhi'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
