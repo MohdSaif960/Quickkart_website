@@ -4,6 +4,11 @@ body {
   background: #f5f5f5;
   margin: 0;
   padding: 0;
+
+  /* footer bottom fix */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ====== NAVBAR ====== */
@@ -44,8 +49,6 @@ body {
   color: #febd69 !important;
 }
 
-
-
 .nav-icon {
   font-size: 1.4rem;
   color: #fff;
@@ -59,17 +62,68 @@ body {
 /* ====== MOBILE SEARCH BAR ====== */
 .mobile-search {
   position: fixed;
-  background: #232f3e;
-  padding: 8px; /* normal padding */
   top: 70px;
   left: 0;
   right: 0;
+  background: #232f3e;
+  padding: 8px;
   z-index: 1020;
 }
 
 .mobile-search form input {
   border-radius: 5px;
   border: none;
+}
+
+/* ====== CAROUSEL ====== */
+#heroCarousel {
+  margin-top: 140px;/* leave space for mobile navbar + search */
+  width: 100vw;
+  overflow: hidden;
+}
+
+
+#heroCarousel img {
+  height: 75vh;
+  object-fit: cover;
+  width: 100%;
+  display: block;
+  border-radius: 6px; /* optional: thoda rounded look */
+}
+
+/* ====== CATEGORIES ====== */
+.category-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px 10px;
+  transition: 0.3s ease;
+  height: 100%;
+  border: 1px solid #eee;
+  text-align: center;
+}
+
+.category-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.category-icon {
+  background: #f8f9fa;
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e0e0e0;
+  overflow: hidden;
+}
+
+.category-icon img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
 }
 
 /* ====== HEADING STYLE ====== */
@@ -145,54 +199,19 @@ h2.fw-bold {
   color: #febd69;
 }
 
-/* ====== CART BADGE ====== */
-.cart-badge {
-  position: absolute;
-  top: -0px;
-  right: -1px;
-  background: #ff4136;
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: bold;
-  border-radius: 50%;
-  padding: 2px 6px;
-  min-width: 18px;
-  text-align: center;
-  line-height: 1.2;
-}
-
-.nav-icon {
-  position: relative;
-  font-size: 1.3rem;
-}
-
 /* ====== RESPONSIVE ====== */
-@media (max-width: 992px) {
+@media (max-width: 993px) {
   .search-bar {
     display: none;
   }
+
   .product-img {
     height: 200px;
   }
 
-
-/* ====== FOOTER ====== */
-.footer {
-  background: #131921;
-  color: #fff;
-  padding: 40px 20px;
-}
-
-.footer h5 {
-  color: #febd69;
-  margin-bottom: 5px;
-}
-
-
-.footer a:hover {
-  color: #febd69;
-}
-
+  #heroCarousel img {
+    height: 65vh;
+  }
 }
 
 @media (max-width: 576px) {
@@ -202,80 +221,57 @@ h2.fw-bold {
   .product-img {
     height: 160px;
   }
-}
-  .footer {
-  margin-top: auto;
+  .category-icon {
+    width: 80px;
+    height: 80px;
+  }
+  .category-icon img {
+    width: 60px;
+    height: 60px;
+  }
+   #heroCarousel img {
+    height: 40vh;
+  }
+  h2.fw-bold {
+  font-size: 1.6rem;
+  color: #222;
+  border-left: 5px solid #ffc107;
+  padding-left: 12px;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
+}
 
-/* sirf tablets me apply karna ho to */
-@media (min-width: 768px) and (max-width: 1024px) {
-  .footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
+/* Tablet */
+@media (max-width: 992px) and (min-width: 577px) {
+  #heroCarousel img {
+    height: 45vh;  /* medium size */
   }
 }
 
 
 
-
-
-
-.card-body {
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
-  flex: 1;
-}
-
-.card-title {
-  font-weight: bold;
-  font-size: 1rem;
-  margin-bottom: 6px;
-  color: #111;
-}
-
-.card-body p {
-  margin-bottom: 6px;
-  font-size: 0.9rem;
-  color: #444;
-}
-
-.card-body .price {
-  font-size: 1.1rem;
-  margin-bottom: 4px;
-  color: #b12704;
-}
-
-.card-body .old-price {
-  font-size: 0.9rem;
-  text-decoration: line-through;
-  color: #777;
-}
-
-/* ====== BUTTON STYLE (Home.css ke jaisa) ====== */
-.card-body .btn {
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  margin-top: auto; /* button hamesha bottom me rahe */
-}
-
-
-/* ====== STICKY MOBILE SEARCH ====== */
-.sticky-search-nav {
-  display: none;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1030;
-}
-
-
-
-
+ /* Cart badge style */
+    .cart-badge {
+      position: absolute;
+      top: -0px;
+      right: -1px;
+      background: #ff4136;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: bold;
+      border-radius: 50%;
+      padding: 2px 6px;
+      min-width: 18px;
+      text-align: center;
+      line-height: 1.2;
+    }
+    .nav-icon {
+      position: relative;
+      font-size: 1.3rem;
+    }
 
 
 
@@ -378,6 +374,23 @@ h2.fw-bold {
     }
 }
 
+/* Page load/back ke time animation disable */
+.offcanvas.no-transition {
+    transition: none !important;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -418,3 +431,11 @@ h2.fw-bold {
     color: red;
 }
 
+.footer {
+  margin-top: auto;
+}
+
+
+.wishlist-content {
+  flex: 1;
+}

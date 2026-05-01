@@ -64,6 +64,7 @@
         </li>
         <li class="nav-item"><a class="nav-link" href="{% url 'order_list' %}">📦 Orders</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}">👤 Profile</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'wishlist_page' %}">❤️ Wishlist</a></li>
         <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">🚪 Logout</a></li>
       {% else %}
         <li class="nav-item"><a class="nav-link" href="{% url 'signup' %}">✍️ Signup</a></li>
@@ -152,9 +153,10 @@
     <a href="{% url 'cart' %}"><i class="bi bi-cart-fill"></i> Cart</a>
     <a href="{% url 'order_list' %}"><i class="bi bi-box-seam"></i> Orders</a>
     <a href="{% url 'profile' %}"><i class="bi bi-person-fill"></i> Profile</a>
+    <a href="{% url 'wishlist_page' %}"><i class="bi bi-heart-fill"></i> Wishlist</a>
     <hr>
-    <a href="{% url 'signup' %}"><i class="bi bi-pencil-square"></i> Signup</a>
-    <a href="{% url 'login' %}"><i class="bi bi-key-fill"></i> Login</a>
+    <!--<a href="{% url 'signup' %}"><i class="bi bi-pencil-square"></i> Signup</a>
+    <a href="{% url 'login' %}"><i class="bi bi-key-fill"></i> Login</a>-->
     <a href="{% url 'logout' %}"><i class="bi bi-door-closed-fill"></i> Logout</a>
   </div>
 </div>
@@ -164,48 +166,75 @@
   <hr class="my-2">
 
   <div class="row g-3">
-    {% for product in products %}
-      <div class="col-6 col-md-4 col-lg-3">
-        <div class="card product-card h-100 shadow-sm">
-          <div class="position-relative">
-            <img src="{{ product.image.url }}" class="product-img card-img-top" alt="{{ product.name }}">
+  {% for product in products %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <div class="card product-card h-100 shadow-sm">
 
-            {% if product.discount_price %}
-              <span class="badge bg-danger position-absolute top-0 start-0 m-2">
-                Sale - {{ product.discount_percent }}% off
-              </span>
-            {% endif %}
+        <div class="position-relative">
 
-            {% if product.stock == 0 %}
-              <span class="badge bg-secondary position-absolute top-0 end-0 m-2">Out of Stock</span>
-            {% endif %}
-          </div>
+          <img src="{{ product.image.url }}" class="product-img card-img-top" alt="{{ product.name }}">
 
-          <div class="card-body d-flex flex-column">
-            <h6 class="card-title text-truncate fw-bold">{{ product.name }}</h6>
-            <p class="small text-muted text-truncate">{{ product.description|truncatewords:12 }}</p>
-            <div class="mb-2">
-              {% if product.discount_price %}
-                <span class="price">₹{{ product.discount_price }}</span>
-                <span class="old-price">₹{{ product.price }}</span>
-              {% else %}
-                <span class="price">₹{{ product.price }}</span>
-              {% endif %}
-            </div>
-            <div class="mt-auto d-grid gap-2">
-              <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-primary btn-sm">View Details</a>
-              {% if product.stock > 0 %}
-                <a href="{% url 'add_to_cart' product.id %}" class="btn btn-warning btn-sm">Add to Cart</a>
-              {% else %}
-                <button class="btn btn-secondary btn-sm" disabled>Out of Stock</button>
-              {% endif %}
-            </div>
-          </div>
+          <!-- Wishlist Heart -->
+          <a href="{% url 'add_to_wishlist' product.id %}"
+             class="wishlist-icon {% if product.id in wishlist_products %}active{% endif %}">
+            ♥
+          </a>
+
+          {% if product.discount_price %}
+            <span class="badge bg-danger position-absolute top-0 start-0 m-2">
+              Sale - {{ product.discount_percent }}% off
+            </span>
+          {% endif %}
+
+          {% if product.stock == 0 %}
+            <span class="badge bg-secondary position-absolute top-0 end-0 m-2">
+              Out of Stock
+            </span>
+          {% endif %}
 
         </div>
+
+        <div class="card-body d-flex flex-column">
+          <h6 class="card-title text-truncate fw-bold">
+            {{ product.name }}
+          </h6>
+
+          <p class="small text-muted text-truncate">
+            {{ product.description|truncatewords:12 }}
+          </p>
+
+          <div class="mb-2">
+            {% if product.discount_price %}
+              <span class="price">₹{{ product.discount_price }}</span>
+              <span class="old-price">₹{{ product.price }}</span>
+            {% else %}
+              <span class="price">₹{{ product.price }}</span>
+            {% endif %}
+          </div>
+
+          <div class="mt-auto d-grid gap-2">
+
+            <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-primary btn-sm">
+              View Details
+            </a>
+
+            {% if product.stock > 0 %}
+              <a href="{% url 'add_to_cart' product.id %}" class="btn btn-warning btn-sm">
+                Add to Cart
+              </a>
+            {% else %}
+              <button class="btn btn-secondary btn-sm" disabled>
+                Out of Stock
+              </button>
+            {% endif %}
+
+          </div>
+        </div>
+
       </div>
-    {% endfor %}
-  </div>
+    </div>
+  {% endfor %}
+</div>
 </div>
 
 <!-- ===== FOOTER ===== -->

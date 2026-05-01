@@ -6,7 +6,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+
+    <link rel="stylesheet" href="{% static 'css/wishlist.css' %}">
+
  </head>
 <body>
 
@@ -156,96 +158,33 @@
   </div>
 </div>
 
-<!-- ====== CAROUSEL ====== -->
-<div id="heroCarousel" class="carousel slide mt-5" data-bs-ride="carousel">
-  <div class="carousel-inner">
-    <div class="carousel-item active">
-      <img src="{% static 'images/carousel1.jpg' %}" class="d-block w-100" alt="Slide 1">
-    </div>
-    <div class="carousel-item">
-      <img src="{% static 'images/carousel5.jpg' %}" class="d-block w-100" alt="Slide 4">
-    </div>
-    <div class="carousel-item">
-      <img src="{% static 'images/carousel9.jpg' %}" class="d-block w-100" alt="Slide 6">
-    </div>
-    <div class="carousel-item">
-      <img src="{% static 'images/carousel11.jpg' %}" class="d-block w-100" alt="Slide 7">
-    </div>
-    <div class="carousel-item">
-      <img src="{% static 'images/carousel12.jpg' %}" class="d-block w-100" alt="Slide 7">
-    </div>
-    <div class="carousel-item">
-      <img src="{% static 'images/carousel13.jpg' %}" class="d-block w-100" alt="Slide 7">
-    </div>
-    <div class="carousel-item">
-      <img src="{% static 'images/carousel16.jpg' %}" class="d-block w-100" alt="Slide 7">
-    </div>
-    <div class="carousel-item">
-      <img src="{% static 'images/carousel17.jpg' %}" class="d-block w-100" alt="Slide 7">
-    </div>
-    <div class="carousel-item">
-      <img src="{% static 'images/carousel18.jpg' %}" class="d-block w-100" alt="Slide 7">
-    </div>
-  </div>
-  <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon"></span>
-  </button>
-  <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-    <span class="carousel-control-next-icon"></span>
-  </button>
-</div>
-
- <hr class="my-1">
-<!-- ====== CATEGORIES ====== -->
-<div class="container mt-4">
-  <h2 class="fw-bold mb-3">Shop by Categories</h2>
-  <hr class="my-2">
-
-  <div class="row g-3">
-    {% for category in categories %}
-      <div class="col-6 col-md-3 col-lg-3">
-        <a href="{% url 'category_products' category.slug %}" class="text-decoration-none">
-          <div class="card category-card text-center p-3">
-            <div class="category-icon">
-              {% if category.image %}
-                <img src="{{ category.image.url }}" alt="{{ category.name }}" class="img-fluid">
-              {% endif %}
-            </div>
-            <h6 class="mt-2 fw-bold text-dark">{{ category.name }}</h6>
-          </div>
-        </a>
-      </div>
-    {% endfor %}
-  </div>
-</div>
-
+<main class="wishlist-content">
+<hr class="my-5">
+<!-- ====== WISHLIST PRODUCTS ====== -->
+<h2 class="mt-5 fw-bold mb-3">My Wishlist</h2>
 <hr class="my-2">
-<!-- ====== PRODUCTS ====== -->
-<h2 class="mt-5 fw-bold mb-3">Latest Products</h2>
- <hr class="my-2">
 
 <div class="row g-3">
-  {% for product in products %}
+  {% for item in wishlist_items %}
     <div class="col-6 col-md-4 col-lg-3">
       <div class="card product-card h-100 shadow-sm">
 
         <div class="position-relative">
 
-          <img src="{{ product.image.url }}" class="product-img card-img-top" alt="{{ product.name }}">
+          <img src="{{ item.product.image.url }}" class="product-img card-img-top" alt="{{ item.product.name }}">
 
-          <!-- Wishlist Heart -->
-          <a href="{% url 'add_to_wishlist' product.id %}"
-           class="wishlist-icon {% if product.id in wishlist_products %}active{% endif %}">
+          <!-- Wishlist Heart Active -->
+          <a href="{% url 'remove_from_wishlist' item.id %}" class="wishlist-icon active">
             ♥
           </a>
 
-          {% if product.discount_price %}
+          {% if item.product.discount_price %}
             <span class="badge bg-danger position-absolute top-0 start-0 m-2">
-              Sale - {{ product.discount_percent }}% off
+              Sale - {{ item.product.discount_percent }}% off
             </span>
           {% endif %}
 
-          {% if product.stock == 0 %}
+          {% if item.product.stock == 0 %}
             <span class="badge bg-secondary position-absolute top-0 end-0 m-2">
               Out of Stock
             </span>
@@ -254,25 +193,31 @@
         </div>
 
         <div class="card-body d-flex flex-column">
-          <h6 class="card-title text-truncate fw-bold">{{ product.name }}</h6>
-          <p class="small text-muted text-truncate">{{ product.description|truncatewords:12 }}</p>
+          <h6 class="card-title text-truncate fw-bold">
+            {{ item.product.name }}
+          </h6>
+
+          <p class="small text-muted text-truncate">
+            {{ item.product.description|truncatewords:12 }}
+          </p>
 
           <div class="mb-2">
-            {% if product.discount_price %}
-              <span class="price">₹{{ product.discount_price }}</span>
-              <span class="old-price">₹{{ product.price }}</span>
+            {% if item.product.discount_price %}
+              <span class="price">₹{{ item.product.discount_price }}</span>
+              <span class="old-price">₹{{ item.product.price }}</span>
             {% else %}
-              <span class="price">₹{{ product.price }}</span>
+              <span class="price">₹{{ item.product.price }}</span>
             {% endif %}
           </div>
 
           <div class="mt-auto d-grid gap-2">
-            <a href="{% url 'product_detail' product.id %}" class="btn btn-outline-primary btn-sm">
+
+            <a href="{% url 'product_detail' item.product.id %}" class="btn btn-outline-primary btn-sm">
               View Details
             </a>
 
-            {% if product.stock > 0 %}
-              <a href="{% url 'add_to_cart' product.id %}" class="btn btn-warning btn-sm">
+            {% if item.product.stock > 0 %}
+              <a href="{% url 'add_to_cart' item.product.id %}" class="btn btn-warning btn-sm">
                 Add to Cart
               </a>
             {% else %}
@@ -280,66 +225,29 @@
                 Out of Stock
               </button>
             {% endif %}
+
+            <a href="{% url 'remove_from_wishlist' item.id %}" class="btn btn-outline-danger btn-sm">
+              Remove
+            </a>
+
           </div>
         </div>
 
       </div>
     </div>
+  {% empty %}
+    <div class="text-center py-5">
+      <h4>Your Wishlist is Empty ❤️</h4>
+      <a href="{% url 'home' %}" class="btn btn-warning mt-3">
+        Continue Shopping
+      </a>
+    </div>
   {% endfor %}
 </div>
-
-<!-- ====== FOOTER ====== -->
+</main>
 <!-- ====== FOOTER ====== -->
 <footer class="footer mt-5 bg-dark text-light pt-4">
   <div class="container">
-    <div class="row">
-
-      <!-- Brand & Description -->
-      <div class="col-6 col-md-3 mb-3">
-        <h5>Quick-Kart</h5>
-        <p>Your one-stop online store for clothing, accessories & more.</p>
-      </div>
-
-      <!-- Quick Links -->
-      <div class="col-6 col-md-3 mb-3">
-        <h5>Quick Links</h5>
-        <a href="{% url 'category_products' 'boys-fashion' %}" class="text-light text-decoration-none d-block">Boys-fashion</a>
-        <a href="{% url 'category_products' 'girls-fashion' %}" class="text-light text-decoration-none d-block">Girl-fashion</a>
-        <a href="{% url 'category_products' 'kids-fashion' %}" class="text-light text-decoration-none d-block">Kids-fashion</a>
-        <a href="{% url 'category_products' 'women-fashion' %}" class="text-light text-decoration-none d-block">Women-fashion</a>
-      </div>
-
-      <!-- Help & Support -->
-      <div class="col-6 col-md-3 mb-3">
-        <h5>Help & Support</h5>
-        <a href="#" class="text-light text-decoration-none d-block">FAQs</a>
-        <a href="#" class="text-light text-decoration-none d-block">Shipping</a>
-        <a href="#" class="text-light text-decoration-none d-block">Returns</a>
-        <a href="#" class="text-light text-decoration-none d-block">Payment Options</a>
-      </div>
-
-      <!-- Newsletter -->
-      <div class="col-6 col-md-3 mb-3">
-        <h5>Newsletter</h5>
-        <p>Join 10,000+ happy shoppers</p>
-        <form class="d-flex mb-2">
-          <input type="email" class="form-control me-2" placeholder="Your email">
-          <button class="btn btn-warning btn-sm">Subscribe</button>
-        </form>
-        <!-- Social icons -->
-        <div class="mt-2">
-          <a href="#" class="text-light me-2"><i class="fab fa-facebook-f"></i></a>
-          <a href="#" class="text-light me-2"><i class="fab fa-instagram"></i></a>
-          <a href="#" class="text-light me-2"><i class="fab fa-twitter"></i></a>
-          <a href="#" class="text-light"><i class="fab fa-youtube"></i></a>
-        </div>
-      </div>
-
-    </div>
-
-    <hr class="bg-light">
-
-    <!-- Contact Info -->
     <div class="row">
       <div class="col text-center mb-2">
         <p class="mb-1">📍 Malviya Nagar, New Delhi, India</p>
@@ -348,8 +256,6 @@
         <p class="mb-1">📞 Phone: +91 8882492349</p>
       </div>
     </div>
-
-    <!-- Copyright -->
     <div class="row">
       <div class="col text-center">
         <p class="mb-0">&copy; 2025 Quick-Kart | All Rights Reserved</p>

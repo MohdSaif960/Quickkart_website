@@ -106,6 +106,7 @@
     <!-- ===== Order Header ===== -->
     <div class="order-header">Order #{{ order.id }} &nbsp;|&nbsp; Placed on {{ order.created_at|date:"d M Y H:i" }}</div>
 
+
     <!-- ===== Order Status Steps ===== -->
     <div class="order-steps">
       {% for step in step_status %}
@@ -184,6 +185,12 @@
     <div class="section-card">
       <h6 class="section-title">Price Summary</h6>
       <ul class="list-unstyled mb-0">
+        <li>Payment Method: <span class="badge bg-primary">{{ order.payment_method }}</span>
+        {% if order.payment.is_successful %}
+                    <span class="badge bg-success">Payment Successful</span>
+                    {% else %}
+                    <span class="badge bg-warning text-dark">Payment Pending</span></li>
+                    {% endif %}
         <li>Total-Price: ₹{{ total_price }}</li>
         <li>Total-Discount: ₹{{ total_discount }}</li>
         <li class="fw-bold">Total: ₹{{ total }}</li>

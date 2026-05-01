@@ -1,0 +1,571 @@
+/* ==========================
+   GLOBAL
+========================== */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+
+body {
+    font-family: Arial, sans-serif;
+    background: #efefef;
+    padding-top: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ==========================
+   PREMIUM NAVBAR (ORDER PAGE STYLE)
+========================== */
+.custom-navbar {
+    background: linear-gradient(90deg, #02060d, #07111f, #02060d);
+    height: 72px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1030;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 22px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+/* ===== Logo Bigger Like Order Page ===== */
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff !important;
+
+}
+
+.navbar-brand:hover {
+    color: #f7b500 !important;
+}
+
+/* ===== Center Title ===== */
+.nav-center {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.3px;
+}
+
+/* ===== Menu Button ===== */
+.menu-btn {
+    border: none;
+    background: transparent;
+    color: #fff;
+    font-size: 34px;
+    cursor: pointer;
+    transition: 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-btn:hover {
+    color: #f7b500;
+    transform: scale(1.05);
+}
+
+/* ==========================
+   OFFCANVAS (ORDER PAGE BLACK STYLE)
+========================== */
+
+/* ==========================
+   OFFCANVAS SIDEBAR
+========================== */
+.offcanvas {
+    width: 280px;
+    background-color: #121212;
+    color: #fff;
+    box-shadow: -5px 0 20px rgba(0,0,0,0.5);
+    transition: transform 0.3s ease;
+}
+
+/* Header */
+.offcanvas-header {
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.offcanvas-header h5 {
+    font-weight: 700;
+    color: #ffb700;
+    font-size: 1.2rem;
+}
+.offcanvas-header .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+.offcanvas-header .btn-close:hover { opacity: 1; }
+
+/* Offcanvas body */
+.offcanvas-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    padding: 1rem 1.5rem;
+    overflow-y: auto;
+    height: calc(100% - 70px);
+}
+
+/* Menu Links */
+.offcanvas-body a {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    text-decoration: none;
+    color: #fff;
+    transition: all 0.3s ease;
+}
+.offcanvas-body a i {
+    font-size: 1.1rem;
+    color: #ffb700;
+}
+.offcanvas-body a:hover {
+    background-color: #ffb700;
+    color: #121212;
+    transform: translateX(5px);
+}
+
+/* Separator */
+.offcanvas-body hr {
+    border-color: rgba(255,255,255,0.1);
+}
+
+/* Scrollbar */
+.offcanvas-body::-webkit-scrollbar { width: 6px; }
+.offcanvas-body::-webkit-scrollbar-thumb {
+    background-color: rgba(255,183,0,0.6);
+    border-radius: 3px;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    .offcanvas {
+        width: 60%;
+        max-width: 200px;
+    }
+    .offcanvas-body a {
+        font-size: 0.95rem;
+        padding: 0.55rem 0.9rem;
+    }
+
+    .footer {
+    margin-top: auto;
+    }
+
+    .footer p {
+    margin-bottom: 6px;
+}
+
+}
+
+/* ==========================
+   CHECKOUT STEPS
+========================== */
+.checkout-steps {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 25px auto 40px;
+    max-width: 1000px;
+    gap: 15px;
+    counter-reset: step;
+}
+
+.checkout-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.checkout-step::after {
+    content: '';
+    position: absolute;
+    top: 15px;
+    right: -50%;
+    width: 100%;
+    height: 2px;
+    background: #d6d6d6;
+    z-index: -1;
+}
+
+.checkout-step:last-child::after {
+    display: none;
+}
+
+.checkout-step::before {
+    content: counter(step);
+    counter-increment: step;
+    width: 34px;
+    height: 34px;
+    line-height: 32px;
+    border-radius: 50%;
+    display: block;
+    margin: 0 auto 8px;
+    border: 2px solid #bbb;
+    background: #fff;
+    font-weight: 600;
+}
+
+.checkout-step.active {
+    color: #0d6efd;
+    font-weight: 700;
+}
+
+.checkout-step.completed {
+    color: #28a745;
+    font-weight: 700;
+}
+
+.checkout-step.completed::before {
+    content: "✔";
+    border-color: #28a745;
+    color: #28a745;
+}
+
+/* ==========================
+   PAYMENT CONTAINER
+========================== */
+.payment-container,
+.container {
+    max-width: 1250px;
+}
+
+/* ==========================
+   PAYMENT CARD
+========================== */
+.payment-card {
+    border-radius: 18px;
+    border: none;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: 0.3s ease;
+}
+
+.payment-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.10);
+}
+
+.card-header {
+    font-size: 1.25rem;
+    font-weight: 700;
+    padding: 18px 22px;
+}
+
+.card-body {
+    padding: 25px;
+}
+
+/* ==========================
+   BOXES
+========================== */
+.address-box,
+.payment-option,
+.summary-box {
+    border: 1px solid #e5e5e5;
+    border-radius: 14px;
+    padding: 18px;
+    background: #fff;
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.payment-option.active {
+    border: 2px solid #198754;
+    background: #f3fff8;
+}
+
+.product-row {
+    border-bottom: 1px solid #f1f1f1;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+/* ==========================
+   BUTTONS
+========================== */
+.btn,
+.place-order-btn {
+    border-radius: 10px;
+    font-weight: 600;
+    padding: 12px 18px;
+    transition: 0.3s ease;
+}
+
+.place-order-btn:hover {
+    transform: translateY(-2px);
+}
+
+/* ==========================
+   FOOTER
+========================== */
+.footer {
+    background: #131921;
+    color: #fff;
+    padding: 40px 20px;
+    margin-top: auto;
+}
+
+.footer p {
+    margin-bottom: 6px;
+}
+
+/* ==========================
+   RESPONSIVE
+========================== */
+@media (max-width: 992px) {
+    .payment-card {
+        margin-bottom: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    body {
+        padding-top: 0px;
+    }
+
+    .navbar-brand {
+        font-size: 1.5rem;
+    }
+
+    .nav-center {
+        font-size: 1.15rem;
+    }
+
+    .menu-btn {
+        font-size: 28px;
+    }
+
+    .checkout-steps {
+        gap: 8px;
+    }
+
+    .checkout-step {
+        font-size: 0.85rem;
+    }
+
+    .offcanvas {
+        width: 75%;
+    }
+}
+
+.navbar .container-fluid {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.footer {
+  margin-top: auto;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ===== Payment Professional Cards ===== */
+
+.payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.payment-card-option {
+    border: 1px solid #e4e4e4;
+    border-radius: 14px;
+    padding: 16px;
+    background: #fff;
+    transition: 0.3s ease;
+    cursor: pointer;
+}
+
+.payment-card-option:hover {
+    border-color: #198754;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.active-option {
+    border: 2px solid #198754;
+    background: #f3fff8;
+}
+
+.disabled-option {
+    opacity: 0.65;
+    cursor: not-allowed;
+    background: #fafafa;
+}
+
+.disabled-option:hover {
+    transform: none;
+    border-color: #ddd;
+    box-shadow: none;
+}
+
+.payment-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.payment-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.payment-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #f4f4f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+}
+
+.payment-check {
+    font-size: 20px;
+    color: #198754;
+}
+
+/* ===== Product Summary Professional ===== */
+
+.summary-products {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.summary-product-card {
+    border: 1px solid #ececec;
+    border-radius: 12px;
+    padding: 14px;
+    background: #fff;
+    transition: 0.3s ease;
+}
+
+.summary-product-card:hover {
+    box-shadow: 0 6px 15px rgba(0,0,0,0.06);
+}
+
+.summary-product-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* ===== COD Selectable Option ===== */
+
+.payment-radio {
+    display: none;
+}
+
+.selectable-option {
+    cursor: pointer;
+}
+
+.selectable-option .payment-check {
+    opacity: 0;
+    transition: 0.3s ease;
+}
+
+.selectable-option:has(.payment-radio:checked) {
+    border: 2px solid #198754;
+    background: #f3fff8;
+}
+
+.selectable-option:has(.payment-radio:checked) .payment-check {
+    opacity: 1;
+}
+
+
+
+.selected-payment {
+    border: 2px solid #198754 !important;
+    background: #f3fff8;
+}
+
+.selected-payment .payment-check {
+    opacity: 1 !important;
+}

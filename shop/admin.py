@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Cart, CartItem, Address, Order, OrderItem, Payment
+from .models import Category, Product, Cart, CartItem, Address, Order, OrderItem, Payment, Review
 from django.utils.html import format_html
 
 
@@ -58,3 +58,6 @@ class OrderItemAdmin(admin.ModelAdmin):
 class PaymentAdmin(admin.ModelAdmin):
     list_display = ('order', 'method', 'amount', 'is_successful', 'created_at')
     list_filter = ('method', 'is_successful')
+
+
+admin.site.register(Review)

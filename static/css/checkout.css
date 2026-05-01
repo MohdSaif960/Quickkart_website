@@ -314,3 +314,10 @@ a {
 
 
 
+.stepper .step::after {
+    border-color: #0d6efd !important;
+}
+
+.stepper .step.completed::after {
+    border-color: #198754 !important;
+}

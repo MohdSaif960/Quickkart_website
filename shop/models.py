@@ -37,7 +37,11 @@ class Product(models.Model):
     brand = models.CharField(max_length=100, default="Unknown")
 
     # 🔹 Size options (comma separated string: "S,M,L,XL")
-    sizes = models.CharField(max_length=100, blank=True, help_text="Comma separated sizes (e.g. S,M,L,XL)")
+    sizes = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Comma separated sizes (e.g. S,M,L,XL)"
+    )
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -66,6 +70,60 @@ class Product(models.Model):
     def get_size_list(self):
         return [s.strip() for s in self.sizes.split(",") if s.strip()]
 
+    # 🔹 Average Rating Property
+    @property
+    def average_rating(self):
+        reviews = self.reviews.all()
+
+        if reviews.exists():
+            total = sum([review.rating for review in reviews])
+            return round(total / reviews.count(), 1)
+
+        return 0
+
+    @property
+    def review_count(self):
+        return self.reviews.count()
+
+    @property
+    def five_star_percent(self):
+        total = self.reviews.count()
+        if total == 0:
+            return 0
+        count = self.reviews.filter(rating=5).count()
+        return int((count / total) * 100)
+
+    @property
+    def four_star_percent(self):
+        total = self.reviews.count()
+        if total == 0:
+            return 0
+        count = self.reviews.filter(rating=4).count()
+        return int((count / total) * 100)
+
+    @property
+    def three_star_percent(self):
+        total = self.reviews.count()
+        if total == 0:
+            return 0
+        count = self.reviews.filter(rating=3).count()
+        return int((count / total) * 100)
+
+    @property
+    def two_star_percent(self):
+        total = self.reviews.count()
+        if total == 0:
+            return 0
+        count = self.reviews.filter(rating=2).count()
+        return int((count / total) * 100)
+
+    @property
+    def one_star_percent(self):
+        total = self.reviews.count()
+        if total == 0:
+            return 0
+        count = self.reviews.filter(rating=1).count()
+        return int((count / total) * 100)
 
 # ----------------------------
 # Cart Model
@@ -126,7 +184,7 @@ class Address(models.Model):
 # ----------------------------
 class Order(models.Model):
     STATUS_CHOICES = [
-        #("Pending", "Pending"),
+        ("Pending", "Pending"),
         ("Placed", "Placed"),
         ("Shipped", "Shipped"),
         ("Delivered", "Delivered"),
@@ -137,6 +195,7 @@ class Order(models.Model):
     address = models.ForeignKey(Address, on_delete=models.SET_NULL, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Placed")
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_method = models.CharField(max_length=20, default="COD")  # 👈 ADD THIS
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -186,3 +245,31 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment for Order {self.order.id} via {self.method}"
+
+
+# ----------------------------
+# Product Review Model
+# ----------------------------
+class Review(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='reviews')
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField(default=1)
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"
+
+
+
+
+class Wishlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'product')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.product.name}"

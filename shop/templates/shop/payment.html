@@ -1,0 +1,381 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Payment - QuickKart</title>
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/payment.css' %}">
+</head>
+<body>
+
+<!-- ===== Navbar ===== -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm sticky-top">
+  <div class="container-fluid">
+
+    <!-- Logo -->
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">
+      🛍️ Quick-Kart
+    </a>
+
+    <!-- Center Title -->
+    <div class="mx-auto d-none d-lg-block">
+      <span class="navbar-text text-white fw-semibold fs-5">
+        Payment Page
+      </span>
+    </div>
+
+    <!-- Offcanvas Button -->
+    <button class="btn btn-outline-light"
+            type="button"
+            data-bs-toggle="offcanvas"
+            data-bs-target="#sideMenu">
+      ☰
+    </button>
+
+  </div>
+</nav>
+
+<!-- Mobile Title -->
+<div class="text-center bg-light py-2 d-lg-none shadow-sm">
+  <h5 class="mb-0 fw-bold">Payment Page</h5>
+</div>
+<div class="container mt-0.1">
+  <div class="checkout-steps">
+    <div class="checkout-step completed">Checkout</div>
+    <div class="checkout-step active">Payment</div>
+    <div class="checkout-step">Order</div>
+  </div>
+</div>
+
+<!-- ===== Offcanvas Menu ===== -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="sideMenu">
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title">Menu</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+
+  <div class="offcanvas-body">
+    <ul class="list-unstyled">
+      <li><a href="{% url 'home' %}" class="text-decoration-none d-block py-2">Home</a></li>
+      <li><a href="{% url 'cart' %}" class="text-decoration-none d-block py-2">Cart</a></li>
+      <li><a href="{% url 'order_list' %}" class="text-decoration-none d-block py-2">Orders</a></li>
+      <li><a href="{% url 'profile' %}" class="text-decoration-none d-block py-2">Profile</a></li>
+      <li><a href="{% url 'wishlist_page' %}" class="text-decoration-none d-block py-2">Wishlist</a></li>
+      <li><hr></li>
+      <li><a href="{% url 'logout' %}" class="text-decoration-none d-block py-2 text-danger">Logout</a></li>
+    </ul>
+  </div>
+</div>
+
+<div class="container py-5">
+    <div class="row g-4">
+
+        <!-- ================= PAYMENT SECTION ================= -->
+        <div class="col-lg-7">
+            <div class="card shadow payment-card">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0">Payment Details</h4>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <!-- Address -->
+                    <div class="section-title">Selected Address</div>
+
+                    <div class="address-box">
+                        <strong>{{ address.full_name }}</strong><br>
+                        {{ address.address_line }}<br>
+                        {{ address.city }}, {{ address.state }} - {{ address.pincode }}<br>
+                        <span class="text-muted">Phone: {{ address.phone_number }}</span>
+                    </div>
+
+                    <!-- Payment -->
+                    <div class="section-title mt-4">Select Payment Method</div>
+
+                    <form method="POST" action="{% url 'place_order' %}" id="paymentForm">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="address" value="{{ address.id }}">
+
+                        {% if single_product %}
+                        <input type="hidden" name="product_id" value="{{ single_product.id }}">
+                        <input type="hidden" name="quantity" value="{{ single_quantity }}">
+                        <input type="hidden" name="size" value="{{ single_size }}">
+                        {% endif %}
+
+                        <div class="payment-methods">
+
+                            <!-- COD -->
+                           <label class="payment-card-option selectable-option">
+    <input type="radio" name="payment_method" value="COD" class="payment-radio" id="codRadio">
+    <div class="payment-content">
+        <div class="payment-left">
+            <div class="payment-icon">💵</div>
+
+            <div>
+                <h6 class="mb-1 fw-bold">Cash On Delivery</h6>
+                <small class="text-muted">
+                    Pay after receiving your order
+                </small>
+            </div>
+        </div>
+
+        <div class="payment-check">
+            ✔
+        </div>
+    </div>
+</label>
+
+                            <!-- Paytm -->
+                            <div class="payment-card-option disabled-option">
+                                <div class="payment-content">
+                                    <div class="payment-left">
+                                        <div class="payment-icon">📱</div>
+
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">Paytm</h6>
+                                            <small class="text-danger">
+                                                Currently unavailable
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Google Pay -->
+                            <div class="payment-card-option disabled-option">
+                                <div class="payment-content">
+                                    <div class="payment-left">
+                                        <div class="payment-icon">💳</div>
+
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">Google Pay</h6>
+                                            <small class="text-danger">
+                                                Coming soon
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- PhonePe -->
+                            <div class="payment-card-option disabled-option">
+                                <div class="payment-content">
+                                    <div class="payment-left">
+                                        <div class="payment-icon">📲</div>
+
+                                        <div>
+                                            <h6 class="mb-1 fw-bold">PhonePe</h6>
+                                            <small class="text-danger">
+                                                Coming soon
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Button -->
+                        <button type="submit" class="btn btn-success w-100 place-order-btn mt-4">
+                            Place Order
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= ORDER SUMMARY ================= -->
+        <div class="col-lg-5">
+            <div class="card shadow payment-card">
+                <div class="card-header bg-dark text-white py-3">
+                    <h4 class="mb-0">Order Summary</h4>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <div class="summary-products">
+
+                        {% if single_product %}
+
+                        <div class="summary-product-card">
+                            <div class="summary-product-info">
+
+                                <div>
+                                    <strong>{{ single_product.name }}</strong>
+
+                                    <div class="small text-muted mt-1">
+                                        Size: {{ single_size }}
+                                    </div>
+                                </div>
+
+                                <div class="text-end">
+                                    <span class="badge bg-secondary">
+                                        x{{ single_quantity }}
+                                    </span>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        {% else %}
+
+                        {% for item in items %}
+                        <div class="summary-product-card">
+                            <div class="summary-product-info">
+
+                                <div>
+                                    <strong>{{ item.product.name }}</strong>
+
+                                    <div class="small text-muted mt-1">
+                                        ₹{{ item.product.final_price }} each
+                                    </div>
+                                </div>
+
+                                <div class="text-end">
+                                    <span class="badge bg-secondary">
+                                        x{{ item.quantity }}
+                                    </span>
+                                </div>
+
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        {% endif %}
+
+                    </div>
+
+                    <!-- Price Summary -->
+                    <div class="summary-box mt-4">
+
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span>₹{{ total }}</span>
+                        </div>
+
+                        <div class="summary-row">
+                            <span>Delivery</span>
+                            <span class="text-success fw-semibold">Free</span>
+                        </div>
+
+                        <hr>
+
+                        <div class="summary-row fw-bold fs-5">
+                            <span>Total</span>
+                            <span>₹{{ total }}</span>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<footer class="footer mt-5 bg-dark text-light pt-4">
+  <div class="container">
+    <div class="row text-center">
+      <div class="col">
+        <p class="mb-1">📍 Malviya Nagar, New Delhi, India</p>
+        <p class="mb-1">✉️ mohdsaif888249@gmail.com</p>
+        <p class="mb-1">📞 Whatsapp: +91 8882492349</p>
+        <p class="mb-1">📞 Phone: +91 8882492349</p>
+      </div>
+    </div>
+
+    <div class="row text-center mt-2">
+      <div class="col">
+        <p class="mb-0">&copy; 2025 Quick-Kart | All Rights Reserved</p>
+      </div>
+    </div>
+  </div>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const codOption = document.querySelector(".selectable-option");
+    const codRadio = document.getElementById("codRadio");
+    const paymentForm = document.getElementById("paymentForm");
+
+    // Toggle Select / Unselect COD
+    codOption.addEventListener("click", function (e) {
+
+        e.preventDefault();
+
+        if (codRadio.checked) {
+            codRadio.checked = false;
+            codOption.classList.remove("selected-payment");
+        } else {
+            codRadio.checked = true;
+            codOption.classList.add("selected-payment");
+        }
+    });
+
+    // Form Validation
+    paymentForm.addEventListener("submit", function (e) {
+
+        if (!codRadio.checked) {
+            e.preventDefault();
+            alert("Please select the payment method before placing the order.");
+        }
+    });
+
+});
+
+
+    document.getElementById("paymentForm").addEventListener("submit", function () {
+    setTimeout(() => {
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+    }, 100);
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>

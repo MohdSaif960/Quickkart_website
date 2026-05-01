@@ -24,4 +24,12 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile_view, name='profile'),
+    path('review/<slug:slug>/', views.add_review, name='add_review'),
+
+    path('wishlist/', views.wishlist_page, name='wishlist_page'),
+    path('add-to-wishlist/<int:product_id>/', views.add_to_wishlist, name='add_to_wishlist'),
+    path('payment/', views.payment_view, name='payment'),
+    path('remove-wishlist/<int:wishlist_id>/', views.remove_from_wishlist, name='remove_from_wishlist')
+
 ]
+

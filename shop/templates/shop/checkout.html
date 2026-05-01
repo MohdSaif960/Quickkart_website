@@ -62,7 +62,8 @@
           Shipping Address
         </div>
         <div class="card-body">
-          <form id="checkout-form" method="post" action="{% url 'place_order' %}">
+          <!--<form id="checkout-form" method="post" action="{% url 'place_order' %}">-->
+          <form id="checkout-form" method="post" action="{% url 'payment' %}">
             {% csrf_token %}
             <!-- Address Dropdown -->
             <div class="mb-3">
@@ -149,7 +150,8 @@
           Total: ₹{{ total }}
         </div>
         <div class="card-footer d-flex gap-2 flex-column">
-          <button type="submit" class="btn btn-success btn-lg">Place Order</button>
+         <!-- <button type="submit" class="btn btn-success btn-lg">Place Order</button>-->
+          <button type="submit" class="btn btn-primary btn-lg">Continue To Payment</button>
           <a href="{% url 'home' %}" class="btn btn-secondary btn-lg">Continue Shopping</a>
         </div>
         </form>

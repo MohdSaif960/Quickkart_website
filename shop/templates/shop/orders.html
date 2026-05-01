@@ -57,6 +57,17 @@
                               <span class="fw-bold">Order ID:</span> {{ order.id }} |
                               <span class="fw-bold">Date:</span> {{ order.created_at|date:"d M Y" }} |
                               <span class="fw-bold">Total:</span> ₹{{ order.total_amount }}
+
+                              <div class="mt-1">
+                                  <span class="fw-bold">Payment Method:</span>
+                                  <span class="badge bg-success"> {{ order.payment_method }}
+                                      {% if order.payment.is_successful %}
+                                      <span class="badge bg-success">Payment Successful</span>
+                                      {% else %}
+                                      <span class="badge bg-warning text-dark">Payment Pending</span>
+                                      {% endif %}
+                                  </span>
+                              </div>
                           </div>
                           <div class="order-status
                               {% if order.status == 'Delivered' %}status-delivered{% endif %}

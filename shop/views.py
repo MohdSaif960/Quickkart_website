@@ -1,27 +1,41 @@
+#from .models import Review, Product
+#from django.contrib.auth.decorators import login_required
+#from django.shortcuts import redirect, get_object_or_404
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Category, Product, Cart, CartItem, Address, Order, OrderItem, Payment
+from .models import Category, Product, Cart, CartItem, Address, Order, OrderItem, Payment, Review, Wishlist
 from django.contrib.auth.models import User
+
 
 # ----------------------------
 # Home Page – Show all products
 # ----------------------------
 def home_view(request):
     products = Product.objects.all().order_by('-created_at')
-    #products = Product.objects.all()
     categories = Category.objects.all()
 
     cart_count = 0
+    wishlist_products = []
+
     if request.user.is_authenticated:
+
+        # Cart Count
         cart = Cart.objects.filter(user=request.user).first()
         if cart:
             cart_count = sum(item.quantity for item in cart.items.all())
 
+        # Wishlist Products
+        wishlist_products = Wishlist.objects.filter(
+            user=request.user
+        ).values_list('product_id', flat=True)
+
     return render(request, 'shop/home.html', {
         'products': products,
         'categories': categories,
-        "cart_count": cart_count
+        'cart_count': cart_count,
+        'wishlist_products': wishlist_products
     })
 
 def category_products(request, slug):
@@ -34,10 +48,18 @@ def category_products(request, slug):
         if cart:
             cart_count = sum(item.quantity for item in cart.items.all())
 
+    wishlist_products = []
+
+    if request.user.is_authenticated:
+        wishlist_products = Wishlist.objects.filter(
+            user=request.user
+        ).values_list('product_id', flat=True)
+
     return render(request, 'shop/category_products.html', {
         'category': category,
         'products': products,
         "cart_count": cart_count,
+        'wishlist_products': wishlist_products,
     })
 
 
@@ -56,19 +78,32 @@ def product_detail_view(request, id):
         if cart:
             cart_count = sum(item.quantity for item in cart.items.all())
 
+    wishlist_products = []
+
+    if request.user.is_authenticated:
+        wishlist_products = Wishlist.objects.filter(
+            user=request.user
+        ).values_list('product_id', flat=True)
+
     # Related products: same category wale, current product ko exclude karo
-    related_products = Product.objects.filter(category=product.category).exclude(id=product.id)[:20]
+    related_products = Product.objects.filter(
+        category=product.category
+    ).exclude(id=product.id)[:20]
 
     # 🔹 product.get_size_list() se sizes bhejna
     sizes = product.get_size_list()
 
+    # 🔹 Reviews fetch karo
+    reviews = product.reviews.all().order_by('-created_at')
+
     return render(request, 'shop/product_detail.html', {
         'product': product,
         'related_products': related_products,
-        "cart_count": cart_count,
-        "sizes": sizes   # ✅ naya
+        'cart_count': cart_count,
+        'sizes': sizes,
+        'reviews': reviews,   # ✅ review list added
+        'wishlist_products': wishlist_products,
     })
-
 
 
 # ----------------------------
@@ -91,6 +126,13 @@ def cart_view(request):
     # Order total
     order_total = total_price - total_discount
 
+    wishlist_products = []
+
+    if request.user.is_authenticated:
+        wishlist_products = Wishlist.objects.filter(
+            user=request.user
+        ).values_list('product_id', flat=True)
+
     # ----------------------------
     # Related products logic
     # ----------------------------
@@ -106,6 +148,7 @@ def cart_view(request):
         'total_discount': total_discount,
         'total': order_total,  # use this in template for "Order Total"
         'related_products': related_products,  # 👈 added
+        'wishlist_products': wishlist_products,
     }
 
     return render(request, 'shop/cart.html', context)
@@ -401,6 +444,7 @@ from django.conf import settings
 def place_order_view(request):
     if request.method == 'POST':
         address_id = int(request.POST.get('address'))
+        payment_method = request.POST.get('payment_method', 'COD')
         address = get_object_or_404(Address, id=address_id, user=request.user)
         product_id = request.POST.get('product_id')
         size = request.POST.get('size')
@@ -418,7 +462,15 @@ def place_order_view(request):
             order = Order.objects.create(
                 user=request.user,
                 address=address,
-                total_amount=product.final_price * quantity
+                total_amount=product.final_price * quantity,
+                payment_method=payment_method  # 👈 ADD THIS
+            )
+
+            Payment.objects.create(
+                order=order,
+                method=payment_method,
+                amount=order.total_amount,
+                is_successful=False
             )
 
             OrderItem.objects.create(
@@ -445,6 +497,7 @@ def place_order_view(request):
                     f"📦 Product: {product.name}\n"
                     f"🔢 Quantity: {quantity}\n"
                     f"📏 Size: {size}\n"
+                    f"💳 Payment Method: {payment_method}\n"   # 👈 ADD THIS
                     f"💰 Total: ₹{order.total_amount}\n\n"
                     f"Shipping Address:\n{address.full_name}, {address.address_line}, {address.city}, {address.state} - {address.pincode}\n📞 {address.phone_number}"
                 )
@@ -483,7 +536,15 @@ def place_order_view(request):
             order = Order.objects.create(
                 user=request.user,
                 address=address,
-                total_amount=total
+                total_amount=total,
+                payment_method=payment_method  # 👈 ADD THIS
+            )
+
+            Payment.objects.create(
+                order=order,
+                method=payment_method,
+                amount=order.total_amount,
+                is_successful=False
             )
 
             for item in items:
@@ -510,7 +571,7 @@ def place_order_view(request):
             # ✅ FIXED EMAIL SECTION
             try:
                 subject = f"Order #{order.id} placed successfully!"
-                message = f"👤 User: {request.user.username}\n💰 Total Amount: ₹{order.total_amount}\n\nOrdered Items:\n"
+                message = f"👤 User: {request.user.username}\n💰 Total Amount: ₹{order.total_amount}\n 💳 Payment Method: {payment_method}\n \nOrdered Items:\n"
                 for item in items:
                     message += f"- {item.product.name} (x{item.quantity}) Size: {item.size}\n"
 
@@ -672,24 +733,227 @@ from django.db.models import Q
 
 def search_products(request):
     query = request.GET.get('q', '')
-    category_id = request.GET.get('category_id')  # ✅ category catch
+    category_id = request.GET.get('category_id')
 
+    wishlist_products = []
+
+    # Wishlist products
+    if request.user.is_authenticated:
+        wishlist_products = Wishlist.objects.filter(
+            user=request.user
+        ).values_list('product_id', flat=True)
+
+    # Cart count
     cart_count = 0
     if request.user.is_authenticated:
         cart = Cart.objects.filter(user=request.user).first()
         if cart:
             cart_count = sum(item.quantity for item in cart.items.all())
 
-    products = Product.objects.filter(
-        Q(name__icontains=query) | Q(description__icontains=query)
-    ) if query else Product.objects.none()
+    # Search products
+    if query:
+        products = Product.objects.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query)
+        )
+    else:
+        products = Product.objects.none()
 
-    # ✅ अगर category_id मौजूद है तो सिर्फ उसी category में search होगा
+    # Category filter
     if category_id:
         products = products.filter(category_id=category_id)
 
     return render(request, 'shop/search_results.html', {
         'query': query,
         'products': products,
-        "cart_count": cart_count
+        'cart_count': cart_count,
+        'wishlist_products': wishlist_products,   # ✅ add this
     })
+
+
+
+"""@login_required
+def add_review(request, slug):
+    product = get_object_or_404(Product, slug=slug)
+
+    if request.method == 'POST':
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment')
+
+        Review.objects.create(
+            product=product,
+            user=request.user,
+            rating=rating,
+            comment=comment
+        )
+
+    return redirect('product_detail', slug=slug)"""
+
+
+
+
+
+@login_required
+def add_review(request, slug):
+    product = get_object_or_404(Product, slug=slug)
+
+    if request.method == 'POST':
+
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment')
+
+        review = Review.objects.filter(
+            product=product,
+            user=request.user
+        ).first()
+
+        # Agar review already hai → update
+        if review:
+            review.rating = rating
+            review.comment = comment
+            review.save()
+
+        # Naya review create
+        else:
+            Review.objects.create(
+                product=product,
+                user=request.user,
+                rating=rating,
+                comment=comment
+            )
+
+    return redirect('product_detail', product.id)
+
+
+
+def add_to_wishlist(request, product_id):
+
+    if not request.user.is_authenticated:
+        messages.warning(request, "Please login to add products to wishlist ❤️")
+        return redirect('login')
+
+    product = get_object_or_404(Product, id=product_id)
+
+    wishlist_item, created = Wishlist.objects.get_or_create(
+        user=request.user,
+        product=product
+    )
+
+    if created:
+        messages.success(request, f"{product.name} added to wishlist ❤️")
+    else:
+        messages.info(request, f"{product.name} already in wishlist")
+
+    return redirect(request.META.get('HTTP_REFERER', 'home'))
+@login_required
+def wishlist_page(request):
+    wishlist_items = Wishlist.objects.filter(user=request.user)
+
+    cart_count = 0
+    cart = Cart.objects.filter(user=request.user).first()
+
+    if cart:
+        cart_count = sum(item.quantity for item in cart.items.all())
+
+    context = {
+        'wishlist_items': wishlist_items,
+        'cart_count': cart_count
+    }
+
+    return render(request, 'shop/wishlist.html', context)
+
+
+@login_required
+def remove_from_wishlist(request, wishlist_id):
+    item = get_object_or_404(Wishlist, id=wishlist_id, user=request.user)
+    item.delete()
+
+    return redirect('wishlist_page')
+
+
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+
+from .models import Address, Product, Cart
+
+
+@login_required
+def payment_view(request):
+    if request.method != 'POST':
+        messages.error(request, "Please complete checkout first.")
+        return redirect('checkout')
+
+    # Get selected address
+    address_id = request.POST.get('address')
+
+    if not address_id:
+        messages.error(request, 'Please select an address.')
+        return redirect('checkout')
+
+    # Validate address belongs to logged-in user
+    address = get_object_or_404(
+        Address,
+        id=address_id,
+        user=request.user
+    )
+
+    # Get Buy Now data (if exists)
+    product_id = request.POST.get('product_id')
+    quantity = request.POST.get('quantity')
+    size = request.POST.get('size')
+
+    context = {
+        'address': address
+    }
+
+    # ================= BUY NOW =================
+    if product_id:
+
+        product = get_object_or_404(Product, id=product_id)
+
+        try:
+            quantity = int(quantity)
+        except (TypeError, ValueError):
+            quantity = 1
+
+        total = product.final_price * quantity
+
+        context.update({
+            'single_product': product,
+            'single_quantity': quantity,
+            'single_size': size,
+            'total': total,
+        })
+
+    # ================= CART PAYMENT =================
+    else:
+
+        # Get user's cart safely
+        cart = Cart.objects.filter(user=request.user).first()
+
+        if not cart:
+            messages.error(request, 'Your cart is empty.')
+            return redirect('cart')
+
+        # Get cart items
+        items = cart.items.all()
+
+        if not items.exists():
+            messages.error(request, 'No items found in cart.')
+            return redirect('cart')
+
+        # Calculate total
+        total = sum(item.total_price for item in items)
+
+        context.update({
+            'items': items,
+            'total': total,
+            'cart_count': items.count()
+        })
+
+    # Save selected address in session
+    request.session['selected_address'] = address_id
+
+    return render(request, 'shop/payment.html', context)
