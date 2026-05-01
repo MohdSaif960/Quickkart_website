@@ -1,6 +1,7 @@
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 # ecommerce_web
 =======
 # Quickkart_website
@@ -11,3 +12,6 @@
 =======
 # ecommerce_website
 >>>>>>> e2bdb3f0385e0c831a6f34c734f585fbbadc81a0
+=======
+# Quickkart_website
+>>>>>>> dd3b95f734cfa2025220c12e26e35230ca6bab76
